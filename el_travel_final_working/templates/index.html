@@ -1,0 +1,589 @@
+{% extends 'base.html' %}
+{% block title %}EL Travel - Jelajahi Indonesia dan Dunia{% endblock %}
+{% block content %}
+
+<section class="hero home-hero" id="hero">
+    <div class="hero-slider" id="heroSlider">
+        <div class="hero-slide active" data-index="0">
+            <div class="slide-bg"><img src="https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?w=1600&q=80" alt="Labuan Bajo"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-label"><i class="fas fa-map-marker-alt"></i><span>Labuan Bajo - Indonesia</span></div>
+        </div>
+
+        <div class="hero-slide" data-index="1">
+            <div class="slide-bg"><img src="https://images.unsplash.com/photo-1480796927426-f609979314bd?w=1600&q=80" alt="Tokyo"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-label"><i class="fas fa-map-marker-alt"></i><span>Tokyo - Jepang</span></div>
+        </div>
+
+        <div class="hero-slide" data-index="2">
+            <div class="slide-bg"><img src="https://images.unsplash.com/photo-1499856871958-5b9357976b82?w=1600&q=80" alt="Paris"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-label"><i class="fas fa-map-marker-alt"></i><span>Paris - Prancis</span></div>
+        </div>
+
+        <div class="hero-slide" data-index="3">
+            <div class="slide-bg"><img src="https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=1600&q=80" alt="Raja Ampat"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-label"><i class="fas fa-map-marker-alt"></i><span>Raja Ampat - Indonesia</span></div>
+        </div>
+
+        <div class="hero-slide" data-index="4">
+            <div class="slide-bg"><img src="https://images.unsplash.com/photo-1538485399081-7191377e8241?w=1600&q=80" alt="Seoul"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-label"><i class="fas fa-map-marker-alt"></i><span>Seoul - Korea Selatan</span></div>
+        </div>
+
+        <div class="hero-slide" data-index="5">
+            <div class="slide-bg"><img src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1600&q=80" alt="Santorini"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-label"><i class="fas fa-map-marker-alt"></i><span>Santorini - Yunani</span></div>
+        </div>
+
+        <div class="hero-slide" data-index="6">
+            <div class="slide-bg"><img src="https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=1600&q=80" alt="Swiss Alps"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-label"><i class="fas fa-map-marker-alt"></i><span>Swiss Alps - Swiss</span></div>
+        </div>
+
+        <div class="hero-slide" data-index="7">
+            <div class="slide-bg"><img src="https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=1600&q=80" alt="Maldives"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-label"><i class="fas fa-map-marker-alt"></i><span>Maldives - Maladewa</span></div>
+        </div>
+    </div>
+
+    <div class="hero-content home-hero-content">
+        <div class="home-hero-copy compact">
+            <div class="hero-badge" id="heroBadge">EL Travel</div>
+            <h1 class="hero-title hero-title-simple">Wujudkan destinasi impian anda</h1>
+            <div class="hero-actions">
+                <a href="{{ url_for('destinasi') }}" class="btn-primary">
+                    <i class="fas fa-compass"></i> Jelajahi Destinasi
+                </a>
+                <a href="#globe-section" class="btn-outline-white">
+                    <i class="fas fa-earth-asia"></i> Buka Globe Interaktif
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <button class="slider-arrow slider-prev" id="sliderPrev" aria-label="Slide sebelumnya">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="slider-arrow slider-next" id="sliderNext" aria-label="Slide berikutnya">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+
+    <div class="slider-dots" id="sliderDots">
+        <button class="sdot active" data-goto="0"></button>
+        <button class="sdot" data-goto="1"></button>
+        <button class="sdot" data-goto="2"></button>
+        <button class="sdot" data-goto="3"></button>
+        <button class="sdot" data-goto="4"></button>
+        <button class="sdot" data-goto="5"></button>
+        <button class="sdot" data-goto="6"></button>
+        <button class="sdot" data-goto="7"></button>
+    </div>
+
+    <div class="slide-progress-wrap">
+        <div class="slide-progress-bar" id="slideProgressBar"></div>
+    </div>
+
+    <div class="hero-scroll">
+        <span>Scroll</span>
+        <div class="scroll-line"></div>
+    </div>
+</section>
+
+<section class="globe-section section-padding" id="globe-section">
+    <div class="container">
+        <div class="section-header section-header-left">
+            <span class="section-tag">Interactive Globe</span>
+            <h2 class="section-title">Klik salah satu negara untuk langsung melihat <span class="accent">destinasi yang tersedia</span>.</h2>
+            <p class="section-sub">Sekarang globe menampilkan bentuk wilayah negara dan garis batasnya. Saat negara di-hover, areanya akan timbul dan nama negaranya muncul.</p>
+        </div>
+
+        <div class="globe-layout">
+            <div class="globe-copy">
+                <div class="globe-note">
+                    <strong>Negara aktif di globe</strong>
+                    <p>
+                        {% if globe_supported_country_names %}
+                        {{ globe_supported_country_names|join(', ') }} bisa langsung diklik menuju halaman destinasi negara tersebut.
+                        {% else %}
+                        Negara yang punya destinasi aktif di database akan langsung bisa diklik dari globe.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="globe-note secondary">
+                    <strong>Cara pakai</strong>
+                    <p>Hover area negara untuk melihat nama negara, drag untuk memutar globe, lalu gunakan zoom in atau zoom out agar memilih negara terasa lebih presisi sebelum diklik.</p>
+                </div>
+            </div>
+
+            <div class="globe-stage">
+                <div class="globe-controls">
+                    <button type="button" class="globe-zoom-btn" id="globeZoomIn" aria-label="Zoom in globe">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button type="button" class="globe-zoom-btn" id="globeZoomOut" aria-label="Zoom out globe">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+                <div id="travelGlobe" class="travel-globe" aria-label="Globe interaktif"></div>
+                <div class="globe-zoom-hint"><i class="fas fa-magnifying-glass-plus"></i> Zoom dengan tombol atau scroll mouse</div>
+                <div class="globe-tooltip" id="globeTooltip"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="region-explorer section-padding bg-light">
+    <div class="container">
+        <div class="section-header section-header-left">
+            <span class="section-tag">Destinations</span>
+            <h2 class="section-title">Pilih kawasan perjalanan yang paling sesuai dengan <span class="accent">arah liburan Anda</span>.</h2>
+            <p class="section-sub">Bagian ini diletakkan tepat di bawah globe agar user bisa lanjut dari eksplorasi dunia ke pilihan wilayah yang lebih spesifik tanpa keluar dari alur halaman.</p>
+        </div>
+
+        <div class="region-shortcut-strip">
+            <a href="{{ url_for('destinasi', benua='asia') }}" class="region-shortcut-pill">
+                <i class="fas fa-earth-asia"></i> Asia
+            </a>
+            <a href="{{ url_for('destinasi', benua='eropa') }}" class="region-shortcut-pill">
+                <i class="fas fa-landmark"></i> Eropa
+            </a>
+            <a href="{{ url_for('destinasi', benua='amerika') }}" class="region-shortcut-pill">
+                <i class="fas fa-city"></i> Amerika
+            </a>
+            <a href="{{ url_for('promo') }}" class="region-shortcut-pill promo">
+                <i class="fas fa-badge-percent"></i> Promo
+            </a>
+        </div>
+
+        <div class="region-grid">
+            {% for region in region_cards %}
+            <a href="{{ url_for('destinasi', benua=region.slug) }}" class="region-card region-card-{{ loop.index }}">
+                <img src="{{ region.image }}" alt="{{ region.label }}" loading="lazy">
+                <div class="region-card-overlay"></div>
+                <div class="region-card-copy">
+                    <span class="region-accent">{{ region.accent }}</span>
+                    <h3>{{ region.label }}</h3>
+                    <p>{{ region.summary }}</p>
+                    <div class="region-card-meta">
+                        <span>{{ region.count }} destinasi</span>
+                        <small>{{ region.sample_names }}</small>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="featured-trips-section section-padding">
+    <div class="container">
+        <div class="section-header section-header-left">
+            <span class="section-tag">Curated Trips</span>
+            <h2 class="section-title">Pilihan perjalanan yang sekarang terasa paling siap untuk <span class="accent">langsung Anda pertimbangkan</span>.</h2>
+            <p class="section-sub">Kartu di bawah ini saya ubah jadi lebih informatif: ada negara, durasi, catatan keberangkatan, dan harga awal supaya user langsung punya gambaran tanpa harus menebak-nebak.</p>
+        </div>
+
+        <div class="trip-card-grid">
+            {% for item in featured_trips %}
+            <article class="trip-card">
+                <div class="trip-card-image">
+                    <img src="{{ item.foto }}" alt="{{ item.nama }}" loading="lazy"
+                         onerror="this.src='https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=80'">
+                    <span class="trip-card-type">{{ item.type_label }}</span>
+                </div>
+                <div class="trip-card-body">
+                    <h3>{{ item.trip_title }}</h3>
+
+                    <div class="trip-meta-row">
+                        <span><i class="fas fa-location-dot"></i> {{ item.country }}</span>
+                        <span><i class="fas fa-map-pin"></i> {{ item.nama }}</span>
+                    </div>
+
+                    <div class="trip-meta-row">
+                        <span><i class="fas fa-route"></i> {{ item.duration_code }}</span>
+                        <span><i class="fas fa-suitcase-rolling"></i> {{ item.duration_text }}</span>
+                    </div>
+
+                    <div class="trip-departure">
+                        <span class="trip-departure-label"><i class="fas fa-calendar-check"></i> Keberangkatan</span>
+                        <ul>
+                            {% for departure in item.departure_items %}
+                            <li>{{ departure }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="trip-card-footer">
+                        <div class="trip-price">
+                            <span>Mulai dari {{ item.compare_price|idr }}</span>
+                            <strong>{{ item.start_price|idr }}</strong>
+                        </div>
+                        <a href="{{ url_for('detail_wisata', id=item.id) }}" class="trip-detail-link">
+                            Detail <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="company-trust-section section-padding bg-light">
+    <div class="container">
+        <div class="company-trust-layout">
+            <div class="company-trust-visual">
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80" alt="Tim EL Travel">
+                <div class="company-trust-badge">
+                    <span>Sejak 2016</span>
+                    <strong>Travel lokal & internasional</strong>
+                </div>
+            </div>
+
+            <div class="company-trust-copy">
+                <span class="section-tag">About EL Travel</span>
+                <h2 class="section-title">Perjalanan kami dibangun dengan proses yang terasa rapi, jelas, dan mudah dipercaya.</h2>
+                <p class="section-sub company-trust-sub">
+                    EL Travel beroperasi sejak 2016 untuk menangani perjalanan lokal maupun internasional. Fokus kami bukan hanya menjual paket, tetapi memastikan calon pelanggan paham itinerary, alur pembayaran, dan siapa tim yang akan membantu mereka dari konsultasi sampai hari keberangkatan.
+                </p>
+
+                <div class="trust-points">
+                    <article class="trust-point">
+                        <strong>Operasional yang jelas</strong>
+                        <p>Invoice, detail pemesanan, dan status pembayaran tersusun di sistem sehingga proses konfirmasi tidak terasa abu-abu.</p>
+                    </article>
+                    <article class="trust-point">
+                        <strong>Pendampingan langsung</strong>
+                        <p>Tim kami tetap bisa dihubungi lewat WhatsApp dan email untuk revisi itinerary, pertanyaan dokumen, dan update keberangkatan.</p>
+                    </article>
+                    <article class="trust-point">
+                        <strong>Dokumen & mitra perjalanan</strong>
+                        <p>Penjelasan legalitas operasional, partner hotel, transportasi, dan kebutuhan perjalanan disampaikan saat finalisasi trip agar pelanggan lebih tenang.</p>
+                    </article>
+                </div>
+
+                <div class="trust-stats">
+                    <div>
+                        <strong>10+</strong>
+                        <span>Tahun melayani</span>
+                    </div>
+                    <div>
+                        <strong>Lokal + Global</strong>
+                        <span>Cakupan perjalanan</span>
+                    </div>
+                    <div>
+                        <strong>Fast Response</strong>
+                        <span>Dukungan konsultasi</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script>
+(() => {
+    const container = document.getElementById('travelGlobe');
+    const tooltip = document.getElementById('globeTooltip');
+    const zoomInButton = document.getElementById('globeZoomIn');
+    const zoomOutButton = document.getElementById('globeZoomOut');
+
+    if (!container || !tooltip || !window.d3) return;
+
+    const supportedCountries = new Map(
+        {{ globe_country_targets|tojson }}.map(item => [item.geo_name, item.db_name])
+    );
+
+    const width = 760;
+    const height = 760;
+    const globeRadius = 262;
+    const minScale = 220;
+    const maxScale = 348;
+    const zoomStep = 22;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    let currentScale = globeRadius;
+    let rotation = [-112, -12, 0];
+    let isDragging = false;
+    let suppressClick = false;
+    let hoveredSelection = null;
+    let hoveredFeature = null;
+    let autoRotateEnabled = true;
+    let autoRotateResumeHandle = null;
+
+    const svg = d3.select(container)
+        .append('svg')
+        .attr('viewBox', `0 0 ${width} ${height}`)
+        .attr('preserveAspectRatio', 'xMidYMid meet');
+
+    const defs = svg.append('defs');
+    const clipCircle = defs.append('clipPath')
+        .attr('id', 'globe-map-clip')
+        .append('circle')
+        .attr('cx', centerX)
+        .attr('cy', centerY)
+        .attr('r', globeRadius);
+
+    const oceanGradient = defs.append('radialGradient')
+        .attr('id', 'globe-ocean-gradient')
+        .attr('cx', '32%')
+        .attr('cy', '30%');
+    oceanGradient.append('stop').attr('offset', '0%').attr('stop-color', '#45c4ff');
+    oceanGradient.append('stop').attr('offset', '48%').attr('stop-color', '#177db6');
+    oceanGradient.append('stop').attr('offset', '100%').attr('stop-color', '#0a3658');
+
+    defs.append('filter')
+        .attr('id', 'glow-country')
+        .html(`
+            <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#f6d365" flood-opacity="0.55"></feDropShadow>
+        `);
+
+    const shellCircle = svg.append('circle')
+        .attr('class', 'globe-shell')
+        .attr('cx', centerX)
+        .attr('cy', centerY)
+        .attr('r', globeRadius);
+
+    const shellShadow = svg.append('circle')
+        .attr('class', 'globe-shell-shadow')
+        .attr('cx', centerX)
+        .attr('cy', centerY + globeRadius + 42)
+        .attr('r', globeRadius * 0.78);
+
+    const mapLayer = svg.append('g').attr('clip-path', 'url(#globe-map-clip)');
+
+    const projection = d3.geoOrthographic()
+        .scale(currentScale)
+        .translate([centerX, centerY])
+        .rotate(rotation)
+        .clipAngle(90)
+        .precision(0.6);
+
+    const path = d3.geoPath(projection);
+    const graticule = d3.geoGraticule10();
+
+    mapLayer.append('path')
+        .datum({ type: 'Sphere' })
+        .attr('class', 'globe-ocean')
+        .attr('d', path);
+
+    mapLayer.append('path')
+        .datum(graticule)
+        .attr('class', 'globe-graticule')
+        .attr('d', path);
+
+    const countryGroup = mapLayer.append('g').attr('class', 'globe-countries');
+    let countrySelection = null;
+    const graticulePath = mapLayer.append('path')
+        .datum(graticule)
+        .attr('class', 'globe-graticule');
+
+    const frontGlow = svg.append('circle')
+        .attr('class', 'globe-front-glow')
+        .attr('cx', centerX - globeRadius * 0.24)
+        .attr('cy', centerY - globeRadius * 0.36)
+        .attr('r', globeRadius * 0.92);
+
+    function isSupported(name) {
+        return supportedCountries.has(name);
+    }
+
+    function countryLabel(name) {
+        return supportedCountries.get(name) || name;
+    }
+
+    function countryHref(name) {
+        return `{{ url_for("destinasi") }}?negara=${encodeURIComponent(countryLabel(name))}`;
+    }
+
+    function placeTooltip(clientX, clientY, text) {
+        tooltip.textContent = text;
+        tooltip.style.left = `${clientX}px`;
+        tooltip.style.top = `${clientY}px`;
+        tooltip.classList.add('visible');
+    }
+
+    function clearHover() {
+        if (hoveredSelection) {
+            hoveredSelection.classed('is-hovered', false).attr('filter', null);
+            hoveredSelection = null;
+        }
+        hoveredFeature = null;
+        tooltip.classList.remove('visible');
+    }
+
+    function applyHover(selection, feature, event) {
+        clearHover();
+        hoveredSelection = selection;
+        hoveredFeature = feature;
+        hoveredSelection.classed('is-hovered', true);
+        if (isSupported(feature.properties.name)) {
+            hoveredSelection.attr('filter', 'url(#glow-country)');
+        }
+        if (event) {
+            placeTooltip(event.clientX + 16, event.clientY + 16, countryLabel(feature.properties.name));
+        }
+    }
+
+    function render() {
+        projection.rotate(rotation);
+        mapLayer.select('.globe-ocean').attr('d', path);
+        graticulePath.attr('d', path);
+        if (countrySelection) {
+            countrySelection.attr('d', path);
+        }
+    }
+
+    function pauseAutoRotate() {
+        autoRotateEnabled = false;
+        if (autoRotateResumeHandle) {
+            clearTimeout(autoRotateResumeHandle);
+        }
+        autoRotateResumeHandle = setTimeout(() => {
+            if (!isDragging) {
+                autoRotateEnabled = true;
+            }
+        }, 1800);
+    }
+
+    function updateGlobeScale(nextScale) {
+        currentScale = Math.max(minScale, Math.min(maxScale, nextScale));
+        projection.scale(currentScale);
+        clipCircle.attr('r', currentScale);
+        shellCircle.attr('r', currentScale);
+        shellShadow
+            .attr('cy', centerY + currentScale + 42)
+            .attr('r', currentScale * 0.78);
+        frontGlow
+            .attr('cx', centerX - currentScale * 0.24)
+            .attr('cy', centerY - currentScale * 0.36)
+            .attr('r', currentScale * 0.92);
+        render();
+    }
+
+    d3.json('https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/DATA/world.geojson')
+        .then(world => {
+            const features = (world.features || []).filter(feature => feature.properties && feature.properties.name !== 'Antarctica');
+
+            countrySelection = countryGroup.selectAll('path')
+                .data(features)
+                .join('path')
+                .attr('class', feature => `globe-country${isSupported(feature.properties.name) ? ' is-supported' : ''}`)
+                .attr('data-country', feature => feature.properties.name)
+                .attr('d', path)
+                .on('mouseenter', function(event, feature) {
+                    autoRotateEnabled = false;
+                    applyHover(d3.select(this), feature, event);
+                })
+                .on('mousemove', function(event, feature) {
+                    placeTooltip(event.clientX + 16, event.clientY + 16, countryLabel(feature.properties.name));
+                })
+                .on('mouseleave', function() {
+                    if (!isDragging) {
+                        clearHover();
+                        autoRotateEnabled = true;
+                    }
+                })
+                .on('click', function(event, feature) {
+                    if (suppressClick) {
+                        return;
+                    }
+                    if (isSupported(feature.properties.name)) {
+                        window.location.href = countryHref(feature.properties.name);
+                    }
+                });
+
+            render();
+
+            const drag = d3.drag()
+                .on('start', () => {
+                    isDragging = true;
+                    suppressClick = false;
+                    autoRotateEnabled = false;
+                    clearHover();
+                })
+                .on('drag', event => {
+                    suppressClick = true;
+                    const k = 0.24;
+                    rotation = [
+                        rotation[0] + event.dx * k,
+                        Math.max(-45, Math.min(45, rotation[1] - event.dy * k)),
+                        rotation[2]
+                    ];
+                    render();
+                })
+                .on('end', () => {
+                    isDragging = false;
+                    setTimeout(() => { suppressClick = false; }, 80);
+                    autoRotateEnabled = true;
+                });
+
+            svg.call(drag);
+
+            if (zoomInButton) {
+                zoomInButton.addEventListener('click', () => {
+                    pauseAutoRotate();
+                    updateGlobeScale(currentScale + zoomStep);
+                });
+            }
+
+            if (zoomOutButton) {
+                zoomOutButton.addEventListener('click', () => {
+                    pauseAutoRotate();
+                    updateGlobeScale(currentScale - zoomStep);
+                });
+            }
+
+            container.addEventListener('wheel', event => {
+                event.preventDefault();
+                pauseAutoRotate();
+                updateGlobeScale(currentScale + (event.deltaY < 0 ? zoomStep : -zoomStep));
+            }, { passive: false });
+
+            d3.timer(() => {
+                if (!autoRotateEnabled || isDragging) {
+                    return false;
+                }
+                rotation = [rotation[0] + 0.12, rotation[1], rotation[2]];
+                render();
+                return false;
+            });
+        })
+        .catch(() => {
+            container.innerHTML = `
+                <div class="globe-fallback">
+                    <strong>Globe belum berhasil dimuat.</strong>
+                    <p>Koneksi ke sumber peta sedang bermasalah. Anda tetap bisa membuka halaman destinasi dari menu navigasi.</p>
+                </div>
+            `;
+            tooltip.classList.remove('visible');
+        });
+
+    document.addEventListener('mousemove', event => {
+        if (!tooltip.classList.contains('visible')) {
+            return;
+        }
+        tooltip.style.left = `${event.clientX + 16}px`;
+        tooltip.style.top = `${event.clientY + 16}px`;
+    });
+
+    container.addEventListener('mouseleave', () => {
+        if (!isDragging) {
+            clearHover();
+            autoRotateEnabled = true;
+        }
+    });
+})();
+</script>
+{% endblock %}

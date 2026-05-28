@@ -1,0 +1,615 @@
+{% extends 'base.html' %}
+{% block title %}Beri Review — EL Travel{% endblock %}
+{% block content %}
+
+<div class="review-hero">
+    <div class="review-bg"></div>
+    <div class="review-overlay"></div>
+    <div class="container review-header">
+        <h1 class="review-title">Bagikan Pengalaman Anda</h1>
+        <p class="review-subtitle">Ulasan Anda membantu kami meningkatkan layanan dan membantu traveler lain</p>
+    </div>
+</div>
+
+<section class="review-section">
+    <div class="container">
+        <div class="review-wrapper">
+            <!-- Left: Trip Summary -->
+            <div class="review-left">
+                <div class="review-card trip-summary">
+                    <h2><i class="fas fa-map-marker-alt"></i> Ringkasan Perjalanan</h2>
+                    
+                    <div class="trip-info">
+                        <div class="info-row">
+                            <span class="label">Destinasi</span>
+                            <span class="value">{{ pemesanan.wisata_nama }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Paket</span>
+                            <span class="value">{{ pemesanan.nama_paket }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Tanggal Pergi</span>
+                            <span class="value">{{ pemesanan.tanggal_pergi }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Jumlah Peserta</span>
+                            <span class="value">{{ pemesanan.jumlah_orang }} orang</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rating Criteria Info -->
+                <div class="review-card rating-info">
+                    <h3>Panduan Rating</h3>
+                    <div class="criteria-list">
+                        <div class="criteria-item">
+                            <div class="criteria-icon">
+                                <i class="fas fa-map"></i>
+                            </div>
+                            <div>
+                                <h4>Rating Destinasi</h4>
+                                <p>Seberapa indah dan menarik destinasi yang Anda kunjungi?</p>
+                            </div>
+                        </div>
+                        <div class="criteria-item">
+                            <div class="criteria-icon">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <div>
+                                <h4>Rating Pelayanan</h4>
+                                <p>Bagaimana kualitas pelayanan dari tim EL Travel?</p>
+                            </div>
+                        </div>
+                        <div class="criteria-item">
+                            <div class="criteria-icon">
+                                <i class="fas fa-smile"></i>
+                            </div>
+                            <div>
+                                <h4>Rating Keseluruhan</h4>
+                                <p>Kepuasan Anda secara keseluruhan terhadap perjalanan ini</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Review Form -->
+            <div class="review-right">
+                <div class="review-card review-form-card">
+                    <h2><i class="fas fa-pen-fancy"></i> Tulis Review</h2>
+                    
+                    <form method="POST" id="reviewForm" class="review-form">
+                        <!-- Personal Info -->
+                        <div class="form-section">
+                            <h3>Informasi Anda</h3>
+                            
+                            <div class="form-group">
+                                <label for="nama_pengguna">Nama Lengkap</label>
+                                <input type="text" id="nama_pengguna" name="nama_pengguna" 
+                                       class="form-input"
+                                       value="{{ existing_review.nama_pengguna if existing_review else pemesanan.nama_pemesan }}"
+                                       required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email_pengguna">Email</label>
+                                <input type="email" id="email_pengguna" name="email_pengguna" 
+                                       class="form-input"
+                                       value="{{ existing_review.email_pengguna if existing_review else pemesanan.email }}"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Ratings -->
+                        <div class="form-section">
+                            <h3>Berikan Rating</h3>
+                            
+                            <!-- Rating Destinasi -->
+                            <div class="rating-group">
+                                <label>Seberapa bagus destinasi yang Anda kunjungi? <span class="required">*</span></label>
+                                <div class="rating-input" id="ratingDestinasi">
+                                    {% for i in range(1, 6) %}
+                                    <input type="radio" name="rating_destinasi" value="{{ i }}" 
+                                           id="dest_{{ i }}"
+                                           {% if existing_review and existing_review.rating_destinasi == i %} checked {% elif not existing_review and i == 5 %} checked {% endif %}>
+                                    <label for="dest_{{ i }}" class="star-label">
+                                        <i class="fas fa-star"></i>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Rating Pelayanan -->
+                            <div class="rating-group">
+                                <label>Bagaimana pelayanan dari tim EL Travel? <span class="required">*</span></label>
+                                <div class="rating-input" id="ratingPelayanan">
+                                    {% for i in range(1, 6) %}
+                                    <input type="radio" name="rating_pelayanan" value="{{ i }}" 
+                                           id="pelayanan_{{ i }}"
+                                           {% if existing_review and existing_review.rating_pelayanan == i %} checked {% elif not existing_review and i == 5 %} checked {% endif %}>
+                                    <label for="pelayanan_{{ i }}" class="star-label">
+                                        <i class="fas fa-star"></i>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Rating Keseluruhan -->
+                            <div class="rating-group">
+                                <label>Rating keseluruhan untuk perjalanan Anda <span class="required">*</span></label>
+                                <div class="rating-input" id="ratingKeseluruhan">
+                                    {% for i in range(1, 6) %}
+                                    <input type="radio" name="rating_keseluruhan" value="{{ i }}" 
+                                           id="keseluruhan_{{ i }}"
+                                           {% if existing_review and existing_review.rating_keseluruhan == i %} checked {% elif not existing_review and i == 5 %} checked {% endif %}>
+                                    <label for="keseluruhan_{{ i }}" class="star-label">
+                                        <i class="fas fa-star"></i>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Review Text -->
+                        <div class="form-section">
+                            <h3>Tulis Review</h3>
+                            
+                            <div class="form-group">
+                                <label for="judul_review">Judul Review (2-100 karakter) <span class="required">*</span></label>
+                                <input type="text" id="judul_review" name="judul_review" 
+                                       class="form-input"
+                                       placeholder="Contoh: Perjalanan yang Luar Biasa!"
+                                       value="{{ existing_review.judul_review if existing_review else '' }}"
+                                       minlength="2" maxlength="100" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="isi_review">Cerita Perjalanan Anda (minimum 20 karakter) <span class="required">*</span></label>
+                                <textarea id="isi_review" name="isi_review" 
+                                          class="form-textarea"
+                                          placeholder="Bagikan pengalaman menarik, highlight, dan saran Anda untuk perjalanan ini..."
+                                          minlength="20" maxlength="2000" required>{{ existing_review.isi_review if existing_review else '' }}</textarea>
+                                <div class="char-count">
+                                    <span id="charCount">0</span> / 2000 karakter
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Disclaimer -->
+                        <div class="form-disclaimer">
+                            <input type="checkbox" id="agree" required>
+                            <label for="agree">
+                                Saya setuju bahwa review saya dapat dipublikasikan di website EL Travel dan 
+                                review saya bersifat jujur dan tidak mengandung konten yang merugikan
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane"></i> 
+                            {% if existing_review %} Update Review {% else %} Kirim Review {% endif %}
+                        </button>
+                    </form>
+
+                    <div class="review-tips">
+                        <h4><i class="fas fa-lightbulb"></i> Tips Menulis Review Bagus</h4>
+                        <ul>
+                            <li>Berikan detail spesifik tentang pengalaman Anda</li>
+                            <li>Bandingkan dengan ekspektasi Anda sebelumnya</li>
+                            <li>Bagikan apa yang Anda sukai dan apa yang bisa ditingkatkan</li>
+                            <li>Hindari spoiler untuk traveler lain yang akan datang</li>
+                            <li>Jadilah jujur dan objektif dalam penilaian Anda</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+/* REVIEW PAGE STYLES */
+.review-hero {
+    position: relative;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-top: 80px;
+}
+
+.review-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, #1a2744 0%, #243360 100%);
+}
+
+.review-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0,50 Q25,25 50,50 T100,50" fill="none" stroke="rgba(200,168,75,.05)" stroke-width="2"/></svg>');
+}
+
+.review-header {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: white;
+}
+
+.review-title {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    font-family: 'Playfair Display', serif;
+}
+
+.review-subtitle {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.8);
+}
+
+.review-section {
+    padding: 60px 0;
+    background: var(--off-white);
+}
+
+.review-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 40px;
+}
+
+.review-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+}
+
+.review-card h2 {
+    font-size: 1.3rem;
+    color: var(--navy);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.review-card h2 i,
+.review-card h3 i { color: var(--gold); font-size: 1.4rem; }
+
+.review-card h3 {
+    color: var(--navy);
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+}
+
+/* TRIP SUMMARY */
+.trip-info {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row .label {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.info-row .value {
+    color: var(--navy);
+    font-weight: 600;
+}
+
+/* RATING INFO */
+.criteria-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.criteria-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(200,168,75,0.05), rgba(230,200,117,0.02));
+    border-radius: 10px;
+}
+
+.criteria-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: white;
+    border-radius: 8px;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+}
+
+.criteria-item h4 {
+    color: var(--navy);
+    margin: 0 0 2px 0;
+    font-size: 0.95rem;
+}
+
+.criteria-item p {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* REVIEW FORM */
+.review-form-card {
+    padding: 32px;
+}
+
+.review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-section h3 {
+    color: var(--navy);
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    color: var(--navy);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.required {
+    color: #e74c3c;
+}
+
+.form-input,
+.form-textarea {
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--navy);
+    transition: var(--transition);
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 12px rgba(200,168,75,0.2);
+}
+
+.form-textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.char-count {
+    color: var(--text-light);
+    font-size: 0.8rem;
+    text-align: right;
+}
+
+/* RATING INPUT */
+.rating-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rating-group label {
+    color: var(--navy);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.rating-input {
+    display: flex;
+    gap: 12px;
+}
+
+.rating-input input[type="radio"] {
+    display: none;
+}
+
+.star-label {
+    font-size: 1.8rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.rating-input input[type="radio"]:checked ~ .star-label,
+.rating-input input[type="radio"]:checked + label,
+.star-label:hover,
+.star-label:hover ~ .star-label {
+    color: var(--gold);
+}
+
+/* DISCLAIMER */
+.form-disclaimer {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: #f0f8ff;
+    border-radius: 10px;
+    border-left: 4px solid #1976d2;
+}
+
+.form-disclaimer input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: var(--gold);
+    flex-shrink: 0;
+}
+
+.form-disclaimer label {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* SUBMIT BUTTON */
+.btn-submit {
+    padding: 14px 24px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 20px rgba(200,168,75,0.3);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(200,168,75,0.4);
+}
+
+/* REVIEW TIPS */
+.review-tips {
+    margin-top: 28px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(78,205,88,0.1), rgba(78,205,88,0.05));
+    border-left: 4px solid #4ecd58;
+    border-radius: 10px;
+}
+
+.review-tips h4 {
+    color: #2e7d32;
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.review-tips h4 i { color: #4ecd58; }
+
+.review-tips ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.review-tips li {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    padding-left: 20px;
+    position: relative;
+}
+
+.review-tips li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #4ecd58;
+    font-weight: bold;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .review-wrapper {
+        grid-template-columns: 1fr;
+    }
+    
+    .review-title {
+        font-size: 1.8rem;
+    }
+    
+    .review-card h2 {
+        font-size: 1.1rem;
+    }
+}
+</style>
+
+<script>
+// Update character counter
+document.getElementById('isi_review').addEventListener('input', function() {
+    document.getElementById('charCount').textContent = this.value.length;
+});
+
+// Star rating interaction
+document.querySelectorAll('.rating-input').forEach(ratingGroup => {
+    const stars = ratingGroup.querySelectorAll('.star-label');
+    
+    stars.forEach((star, index) => {
+        star.addEventListener('click', function() {
+            stars.forEach((s, i) => {
+                if (i <= index) {
+                    s.style.color = 'var(--gold)';
+                } else {
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+    });
+});
+
+// Form validation
+document.getElementById('reviewForm').addEventListener('submit', function(e) {
+    const judul = document.getElementById('judul_review').value;
+    const isi = document.getElementById('isi_review').value;
+    
+    if (judul.length < 2) {
+        e.preventDefault();
+        alert('Judul review minimal 2 karakter');
+        return false;
+    }
+    
+    if (isi.length < 20) {
+        e.preventDefault();
+        alert('Isi review minimal 20 karakter');
+        return false;
+    }
+});
+</script>
+
+{% endblock %}

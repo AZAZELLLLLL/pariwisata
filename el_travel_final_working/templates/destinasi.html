@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Semua Destinasi - EL Travel{% endblock %}
+{% block content %}
+
+<section class="page-hero">
+    <div class="page-hero-bg">
+        <img src="https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=1600" alt="Destinasi">
+        <div class="page-hero-overlay"></div>
+    </div>
+    <div class="page-hero-content">
+        <h1>
+            {% if current_negara %}
+                Destinasi di <span class="accent">{{ current_negara }}</span>
+            {% elif current_benua %}
+                Destinasi <span class="accent">{{ current_region_label }}</span>
+            {% elif current_tipe == 'internasional' %}
+                Destinasi Wisata <span class="accent">Internasional</span>
+            {% elif current_tipe == 'lokal' %}
+                Destinasi Wisata <span class="accent">Indonesia</span>
+            {% elif current_kategori %}
+                Destinasi <span class="accent">{{ current_kategori }}</span>
+            {% else %}
+                Semua Destinasi <span class="accent">EL Travel</span>
+            {% endif %}
+        </h1>
+        <p>
+            {% if current_negara == 'Indonesia' %}
+                Koleksi destinasi lokal yang tersedia untuk perjalanan di seluruh Indonesia
+            {% elif current_negara %}
+                Destinasi pilihan yang tersedia untuk perjalanan ke {{ current_negara }}
+            {% elif current_benua %}
+                Jelajahi seluruh destinasi pilihan EL Travel yang berada di kawasan {{ current_region_label|lower }}
+            {% elif current_tipe == 'internasional' %}
+                Temukan paket perjalanan ke destinasi ikonik dari berbagai penjuru dunia
+            {% elif current_tipe == 'lokal' %}
+                Temukan destinasi impian Anda dari Sabang sampai Merauke
+            {% elif current_kategori %}
+                Pilihan destinasi terbaik untuk kategori {{ current_kategori|lower }}
+            {% else %}
+                Jelajahi seluruh destinasi pilihan terbaik dari EL Travel
+            {% endif %}
+        </p>
+        <div class="breadcrumb">
+            <a href="{{ url_for('index') }}">Home</a> <i class="fas fa-chevron-right"></i>
+            <span>Destinasi</span>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container">
+        <!-- Filter -->
+        <div class="filter-bar">
+            <a href="{{ url_for('destinasi') }}" class="filter-btn {% if not current_kategori and not current_tipe and not current_negara and not current_benua %}active{% endif %}">Semua</a>
+            {% for region in nav_destination_regions %}
+            <a href="{{ url_for('destinasi', benua=region.slug) }}" class="filter-btn {% if current_benua == region.slug %}active{% endif %}">
+                {{ region.label }}
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if current_benua and available_country_filters %}
+        <div class="country-filter-bar">
+            <a href="{{ url_for('destinasi', benua=current_benua) }}" class="country-filter-btn {% if not current_negara %}active{% endif %}">
+                Semua Negara <span>{{ available_country_filters|length }}</span>
+            </a>
+            {% for country in available_country_filters %}
+            <a href="{{ url_for('destinasi', benua=current_benua, negara=country.label) }}"
+               class="country-filter-btn {% if current_negara == country.label %}active{% endif %}">
+                {{ country.label }} <span>{{ country.count }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="wisata-grid" id="wisataGrid">
+            {% if wisata %}
+                {% for item in wisata %}
+                <div class="wisata-card" data-kategori="{{ item.kategori }}">
+                    <div class="wisata-img-wrap">
+                        <img src="{{ item.foto }}" alt="{{ item.nama }}" loading="lazy" 
+                             onerror="this.src='https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600'">
+                        <div class="wisata-overlay">
+                            <a href="{{ url_for('detail_wisata', id=item.id) }}" class="btn-detail">
+                                <i class="fas fa-eye"></i> Detail
+                            </a>
+                        </div>
+                        <span class="wisata-kategori">{{ item.kategori or 'Wisata' }}</span>
+                        <div class="wisata-rating"><i class="fas fa-star"></i> {{ item.rating or '4.8' }}</div>
+                    </div>
+                    <div class="wisata-info">
+                        <h3>{{ item.nama }}</h3>
+                        <p class="wisata-lokasi"><i class="fas fa-map-marker-alt"></i> {{ item.lokasi }}</p>
+                        <p class="wisata-desc">{{ item.deskripsi[:120] + '...' if item.deskripsi and item.deskripsi|length > 120 else (item.deskripsi or '') }}</p>
+                        <a href="{{ url_for('detail_wisata', id=item.id) }}" class="card-btn">Lihat Detail <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% elif db_error %}
+            <div class="empty-state">
+                <i class="fas fa-database"></i>
+                <h3>Data Destinasi Belum Bisa Dimuat</h3>
+                <p>Pastikan MySQL sedang berjalan dan database <code>pariwisataDb</code> sudah terimport lengkap dari file <code>database_setup_final.sql</code>.</p>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-map-signs"></i>
+                <h3>Destinasi Tidak Ditemukan</h3>
+                <p>
+                    {% if current_benua %}
+                        Belum ada destinasi yang cocok untuk filter {{ current_region_label|lower }}{% if current_negara %} dan negara {{ current_negara }}{% endif %}.
+                    {% else %}
+                        Tidak ada destinasi yang cocok dengan filter yang dipilih. Coba kategori lain atau tampilkan semua destinasi.
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('destinasi') }}" class="btn-primary">Lihat Semua Destinasi</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}

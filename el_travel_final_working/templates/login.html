@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+{% block title %}Login Akun - EL Travel{% endblock %}
+{% block flash_messages %}{% endblock %}
+{% block content %}
+
+<section class="page-hero small login-hero-section">
+    <div class="page-hero-bg">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Labuan_Bajo%2C_a_port_in_West_Flores%2C_Nusa_Tenggara%2C_Indonesia%3B_January_2020.jpg" alt="Akun EL Travel">
+        <div class="page-hero-overlay login-hero-overlay"></div>
+    </div>
+    <div class="page-hero-content">
+        <h1>Selamat <span class="accent">Datang</span></h1>
+        <p>Masuk ke akun Anda untuk mulai menjelajahi destinasi impian bersama EL Travel.</p>
+    </div>
+</section>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="login-flash-zone">
+    {% for category, message in messages %}
+    <div class="login-flash-msg login-flash-{{ category }}">
+        <span class="login-flash-icon">
+            {% if category == 'success' %}<i class="fas fa-circle-check"></i>
+            {% elif category == 'danger' or category == 'error' %}<i class="fas fa-circle-xmark"></i>
+            {% elif category == 'warning' %}<i class="fas fa-triangle-exclamation"></i>
+            {% else %}<i class="fas fa-circle-info"></i>{% endif %}
+        </span>
+        <span>{{ message }}</span>
+        <button class="login-flash-close" onclick="this.parentElement.classList.add('hiding')">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<section class="section-padding login-section account-section">
+    <div class="container">
+        <div class="account-shell">
+
+            <!-- Left Column: Info & Benefits -->
+            <div class="account-copy">
+                <span class="section-tag">Travel Account</span>
+                <h2 class="section-title">Satu akun untuk semua perjalanan Anda.</h2>
+                <p class="section-sub login-sub">
+                    Login cukup sekali. Pantau semua pesanan, status tiket, dan riwayat pembayaran dari satu dashboard akun.
+                </p>
+
+                <div class="login-benefits">
+                    <div class="login-benefit">
+                        <i class="fas fa-shield-halved"></i>
+                        <div>
+                            <strong>Akun aman & terverifikasi</strong>
+                            <p>Setiap akun baru diaktivasi via kode 6 digit yang dikirim ke Gmail Anda — tidak ada akun bot.</p>
+                        </div>
+                    </div>
+                    <div class="login-benefit">
+                        <i class="fas fa-ticket"></i>
+                        <div>
+                            <strong>Pantau tiket langsung</strong>
+                            <p>Setelah login, status setiap pesanan dan tiket perjalanan bisa dipantau kapan saja dari halaman Status Pesanan.</p>
+                        </div>
+                    </div>
+                    <div class="login-benefit">
+                        <i class="fas fa-bolt"></i>
+                        <div>
+                            <strong>Checkout lebih cepat</strong>
+                            <p>Data Anda sudah tersimpan — booking destinasi berikutnya jauh lebih ringkas tanpa perlu isi ulang dari awal.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Login Form -->
+            <div class="account-panel">
+
+
+
+                <!-- Main Login Card -->
+                <div class="account-choice-grid single-column">
+                    <article class="login-card account-choice-card">
+                        <div class="account-card-top">
+                            <span class="section-tag">Akun Sudah Ada</span>
+                            <h3>Masuk ke akun EL Travel</h3>
+                            <p>Gunakan Gmail dan password yang sudah Anda daftarkan sebelumnya.</p>
+                        </div>
+
+                        <form method="POST" class="login-form" id="loginForm" novalidate>
+                            <input type="hidden" name="action" value="existing_login">
+                            <input type="text" name="company_website" class="hp-field" tabindex="-1" autocomplete="off">
+
+                            <div class="form-group">
+                                <label for="login-email">Email Gmail</label>
+                                <div class="input-wrap">
+                                    <i class="fas fa-envelope"></i>
+                                    <input type="email" id="login-email" name="email"
+                                           placeholder="contoh@gmail.com" required autocomplete="email">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="login-password">Password Akun</label>
+                                <div class="input-wrap input-wrap-password">
+                                    <i class="fas fa-lock"></i>
+                                    <input type="password" id="login-password" name="password"
+                                           placeholder="Minimal 8 karakter" required autocomplete="current-password">
+                                    <button type="button" class="toggle-password" id="togglePwd" aria-label="Tampilkan password">
+                                        <i class="fas fa-eye" id="eyeIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Verifikasi manusia</label>
+                                <div class="captcha-box">
+                                    <span>Berapa hasil <strong>{{ login_captcha_question }}</strong>?</span>
+                                    <input type="text" name="login_captcha_answer"
+                                           inputmode="numeric" placeholder="Jawaban" required>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-submit login-submit-btn" id="loginSubmitBtn">
+                                <i class="fas fa-right-to-bracket"></i>
+                                <span>Masuk Sekarang</span>
+                                <span class="btn-loading hidden"><i class="fas fa-spinner fa-spin"></i> Memproses...</span>
+                            </button>
+                        </form>
+
+                        <div class="login-next-note compact">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Belum punya akun? Jika email tidak ditemukan, sistem akan menampilkan panduan pendaftaran otomatis.</span>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="login-next-note">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>Setelah login berhasil, Anda akan diarahkan kembali ke halaman sebelumnya secara otomatis.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- === OVERLAY === -->
+<div class="account-overlay {% if show_register_prompt or show_register_panel or pending_registration %}is-visible{% endif %}"
+     id="accountOverlay"></div>
+
+<!-- === POP-UP: Email Tidak Ditemukan === -->
+<div class="account-popup {% if show_register_prompt %}is-visible{% endif %}"
+     id="registerPromptPopup" role="dialog" aria-modal="true" aria-labelledby="registerPromptTitle">
+    <div class="account-popup-card notfound-popup-card">
+        <div class="notfound-popup-icon">
+            <i class="fas fa-user-slash"></i>
+        </div>
+        <span class="section-tag">Akun Tidak Ditemukan</span>
+        <h3 id="registerPromptTitle">Email ini belum terdaftar di EL Travel</h3>
+        <p>
+            {% if suggested_registration_email %}
+            Email <strong>{{ suggested_registration_email }}</strong> belum ada di sistem kami.
+            {% else %}
+            Email yang Anda masukkan belum terdaftar di sistem.
+            {% endif %}
+            Daftarkan sekarang gratis dan mulai memesan destinasi impian Anda.
+        </p>
+        <div class="notfound-popup-steps">
+            <div class="step-item"><span class="step-num">1</span><span>Isi data diri</span></div>
+            <div class="step-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="step-item"><span class="step-num">2</span><span>Buat password</span></div>
+            <div class="step-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="step-item"><span class="step-num">3</span><span>Aktivasi via Gmail</span></div>
+        </div>
+        <div class="account-popup-actions">
+            <a href="{{ url_for('login', next=next_url, show_register=1, register_email=suggested_registration_email) }}"
+               class="btn-primary" id="openRegisterModalButton">
+                <i class="fas fa-user-plus"></i> Daftar Akun Gratis
+            </a>
+            <a href="{{ url_for('login', next=next_url) }}" class="btn-outline-dark">
+                <i class="fas fa-arrow-left"></i> Coba Login Lagi
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- === POP-UP: Form Registrasi === -->
+<div class="account-popup account-register-popup {% if show_register_panel %}is-visible{% endif %}"
+     id="registerModal" role="dialog" aria-modal="true" aria-labelledby="registerModalTitle">
+    <div class="account-popup-card large register-popup-card">
+        <div class="account-card-top">
+            <div class="register-popup-header">
+                <span class="section-tag">Buat Akun Baru</span>
+                <button type="button" class="register-close-btn"
+                        onclick="window.location.href='{{ url_for('login', next=next_url) }}'">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <h3 id="registerModalTitle">Daftarkan akun baru Anda</h3>
+            <p>Lengkapi data di bawah, buat password, lalu aktivasi lewat kode 6 digit yang dikirim ke Gmail.</p>
+        </div>
+
+        <form method="POST" class="login-form register-form-grid" id="registerForm">
+            <input type="hidden" name="action" value="start_register">
+            <input type="text" name="register_website" class="hp-field" tabindex="-1" autocomplete="off">
+
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <div class="input-wrap">
+                    <i class="fas fa-user"></i>
+                    <input type="text" name="nama_lengkap" placeholder="Sesuai identitas" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Email Gmail</label>
+                <div class="input-wrap">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" name="register_email"
+                           value="{{ suggested_registration_email }}"
+                           placeholder="contoh@gmail.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Password Akun</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="register_password" placeholder="Minimal 8 karakter" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ulangi Password</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="confirm_password" placeholder="Tulis ulang password" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Jenis Kelamin</label>
+                <div class="input-wrap select-wrap">
+                    <i class="fas fa-venus-mars"></i>
+                    <select name="jenis_kelamin" required>
+                        {% for gender in gender_options %}
+                        <option value="{{ gender }}">{{ gender }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>No. Telepon</label>
+                <div class="input-wrap">
+                    <i class="fas fa-phone"></i>
+                    <input type="text" name="telepon" placeholder="08xxxxxxxxxx">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Tanggal Lahir</label>
+                <div class="input-wrap">
+                    <i class="fas fa-calendar"></i>
+                    <input type="date" name="tanggal_lahir">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Kota Domisili</label>
+                <div class="input-wrap">
+                    <i class="fas fa-city"></i>
+                    <input type="text" name="kota_domisili" placeholder="Contoh: Jakarta">
+                </div>
+            </div>
+
+            <div class="form-group form-group-full">
+                <label>Verifikasi manusia</label>
+                <div class="captcha-box">
+                    <span>Berapa hasil <strong>{{ register_captcha_question }}</strong>?</span>
+                    <input type="text" name="register_captcha_answer"
+                           inputmode="numeric" placeholder="Jawaban" required>
+                </div>
+            </div>
+
+            <div class="account-popup-actions form-group-full">
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-user-plus"></i> Buat Akun & Kirim Kode
+                </button>
+                <a href="{{ url_for('login', next=next_url) }}" class="btn-outline-dark">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- === POP-UP: Verifikasi OTP === -->
+<div class="account-popup account-register-popup {% if pending_registration %}is-visible{% endif %}"
+     id="otpModal" role="dialog" aria-modal="true" aria-labelledby="otpModalTitle">
+    <div class="account-popup-card large register-popup-card">
+        <div class="account-card-top">
+            <div class="register-popup-header">
+                <span class="section-tag">🔐 Aktivasi Akun</span>
+                <form method="POST" style="display:inline;">
+                    <input type="hidden" name="action" value="cancel_registration">
+                    <button type="submit" class="register-close-btn" aria-label="Batalkan">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </form>
+            </div>
+            <h3 id="otpModalTitle">Selesaikan verifikasi untuk <strong>{{ masked_pending_email }}</strong></h3>
+            <p>Masukkan kode 6 digit yang dikirim ke Gmail Anda. Kode berlaku <strong>10 menit</strong>.</p>
+        </div>
+
+        {% if otp_preview_code %}
+        <div class="login-helper-note warning" style="margin-top: 15px;">
+            <strong>⚙️ Mode Development</strong>
+            <p>SMTP belum dihubungkan. Kode verifikasi ditampilkan di sini untuk pengujian lokal.</p>
+            <div class="otp-preview-code" style="font-size: 1.2rem; letter-spacing: 2px; font-weight: bold; margin-top: 5px;">{{ otp_preview_code }}</div>
+        </div>
+        {% endif %}
+
+        {% if not smtp_configured %}
+        <div class="login-helper-note warning" style="margin-top: 15px;">
+            <strong>Email gateway belum aktif</strong>
+            <p>Kode ditampilkan lokal karena SMTP di <code>.env</code> belum diisi.</p>
+        </div>
+        {% endif %}
+
+        <form method="POST" class="login-form account-verify-form" style="margin-top: 20px;">
+            <input type="hidden" name="action" value="verify_registration">
+            <div class="form-group">
+                <label>Kode Verifikasi 6 Digit</label>
+                <div class="input-wrap otp-input-wrap" style="text-align: center;">
+                    <i class="fas fa-key"></i>
+                    <input type="text" name="verification_code" inputmode="numeric" maxlength="6"
+                           placeholder="Contoh: 481205" required autocomplete="one-time-code" style="letter-spacing: 4px; font-size: 1.1rem; font-weight: bold;">
+                </div>
+            </div>
+            <button type="submit" class="btn-submit" style="margin-top: 10px;">
+                <i class="fas fa-shield-check"></i> Aktifkan Akun
+            </button>
+        </form>
+
+        <div class="otp-actions" style="margin-top: 20px; display: flex; justify-content: center; gap: 15px;">
+            <form method="POST">
+                <input type="hidden" name="action" value="resend_registration_code">
+                <button type="submit" class="btn-text-action">
+                    <i class="fas fa-rotate"></i> Kirim kode baru
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+    // === Overlay click to close ===
+    const overlay = document.getElementById('accountOverlay');
+    const promptPopup = document.getElementById('registerPromptPopup');
+    const registerModal = document.getElementById('registerModal');
+
+    if (overlay) {
+        overlay.addEventListener('click', () => {
+            window.location.href = "{{ url_for('login', next=next_url) }}";
+        });
+    }
+
+    // === Toggle password visibility ===
+    const togglePwd = document.getElementById('togglePwd');
+    const pwdInput = document.getElementById('login-password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    if (togglePwd && pwdInput) {
+        togglePwd.addEventListener('click', () => {
+            const show = pwdInput.type === 'password';
+            pwdInput.type = show ? 'text' : 'password';
+            eyeIcon.className = show ? 'fas fa-eye-slash' : 'fas fa-eye';
+        });
+    }
+
+    // === Auto-dismiss flash messages ===
+    const flashMsgs = document.querySelectorAll('.login-flash-msg');
+    flashMsgs.forEach(msg => {
+        setTimeout(() => msg.classList.add('hiding'), 5000);
+        msg.addEventListener('animationend', e => {
+            if (e.animationName === 'flashHide') msg.remove();
+        });
+    });
+
+    // === Login form loading state ===
+    const loginForm = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('loginSubmitBtn');
+    if (loginForm && submitBtn) {
+        loginForm.addEventListener('submit', () => {
+            const normalSpan = submitBtn.querySelector('span:first-of-type');
+            const loadingSpan = submitBtn.querySelector('.btn-loading');
+            if (normalSpan) normalSpan.classList.add('hidden');
+            if (loadingSpan) loadingSpan.classList.remove('hidden');
+            submitBtn.disabled = true;
+        });
+    }
+})();
+</script>
+{% endblock %}

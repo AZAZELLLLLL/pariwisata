@@ -1,0 +1,288 @@
+{% extends 'backoffice/base.html' %}
+{% block title %}Detail Pesanan {{ order_row.booking_code_display }} - Backoffice EL Travel{% endblock %}
+{% block backoffice_title %}Workspace Pesanan {{ order_row.booking_code_display }}{% endblock %}
+{% block backoffice_subtitle %}Kelola verifikasi pembayaran, status dokumen, tiket, voucher, dan catatan internal dari satu halaman yang sama.{% endblock %}
+{% block backoffice_header_actions %}
+<div class="backoffice-header-actions">
+    <a href="{{ url_for('backoffice_orders') }}" class="btn-outline-dark">
+        <i class="fas fa-arrow-left"></i> Kembali ke Antrean
+    </a>
+    <a href="{{ url_for('backoffice_finance') }}" class="btn-primary">
+        <i class="fas fa-wallet"></i> Riwayat Pembayaran
+    </a>
+</div>
+{% endblock %}
+{% block backoffice_content %}
+<section class="backoffice-detail-hero">
+    <div class="backoffice-detail-summary">
+        <img src="{{ order_row.foto }}" alt="{{ order_row.wisata_nama }}"
+             onerror="this.src='https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=80'">
+        <div>
+            <span class="section-tag">{{ order_row.country_label }}</span>
+            <h2>{{ order_row.wisata_nama }}</h2>
+            <p>{{ order_row.nama_paket }} - {{ order_row.jumlah_orang }} peserta - Berangkat {{ order_row.tanggal_pergi.strftime('%d %b %Y') if order_row.tanggal_pergi else '-' }}</p>
+            <div class="backoffice-badge-row">
+                <span class="bo-badge {{ order_row.operational_meta.tone }}">{{ order_row.operational_meta.label }}</span>
+                <span class="bo-badge {{ order_row.payment_meta.tone }}">{{ order_row.payment_meta.label }}</span>
+                <span class="bo-badge {{ order_row.ticket_meta.tone }}">{{ order_row.ticket_meta.label }}</span>
+                <span class="bo-badge {{ order_row.document_meta.tone }}">{{ order_row.document_meta.label }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="backoffice-detail-quick-actions">
+        <form method="POST">
+            <input type="hidden" name="action" value="approve_payment">
+            <input type="hidden" name="action_note" value="Pembayaran disetujui dari workspace pesanan.">
+            <button type="submit" class="btn-primary" {% if not order_row.pembayaran_id or order_row.status_pembayaran == 'berhasil' %}disabled{% endif %}>
+                <i class="fas fa-badge-check"></i> {{ 'Pembayaran Sudah Lunas' if order_row.status_pembayaran == 'berhasil' else 'Verifikasi Pembayaran' }}
+            </button>
+        </form>
+        <form method="POST">
+            <input type="hidden" name="action" value="complete_order">
+            <input type="hidden" name="action_note" value="Pesanan ditandai selesai dari workspace.">
+            <button type="submit" class="btn-outline-dark">
+                <i class="fas fa-flag-checkered"></i> Tandai Selesai
+            </button>
+        </form>
+        <a href="{{ url_for('backoffice_orders') }}" class="btn-outline-dark">
+            <i class="fas fa-arrow-left"></i> Kembali ke Antrean
+        </a>
+    </div>
+</section>
+
+<section class="backoffice-summary-strip three-up">
+    <article class="backoffice-summary-card">
+        <span>Total Tagihan</span>
+        <strong>{{ order_row.total_harga|idr }}</strong>
+        <small>Nominal pesanan setelah paket dan diskon diterapkan.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Status Pembayaran</span>
+        <strong>{{ order_row.payment_meta.label }}</strong>
+        <small>{{ order_row.payment_verified_by_name or 'Belum ada petugas verifikasi yang tersimpan.' }}</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Status Tiket</span>
+        <strong>{{ order_row.ticket_meta.label }}</strong>
+        <small>Pastikan tiket diterbitkan setelah pembayaran valid.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Follow Up</span>
+        <strong>{{ order_row.deadline_follow_up.strftime('%d %b %Y %H:%M') if order_row.deadline_follow_up else 'Belum diatur' }}</strong>
+        <small>{{ order_row.assigned_staff_name or 'Belum ada petugas penanggung jawab.' }}</small>
+    </article>
+</section>
+
+<section class="backoffice-detail-grid">
+    <div class="backoffice-panel">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">Customer</span>
+                <h2>Informasi Pemesan</h2>
+            </div>
+        </div>
+        <div class="backoffice-info-grid">
+            <div><label>Nama</label><span>{{ order_row.nama_pemesan }}</span></div>
+            <div><label>Email</label><span>{{ order_row.email }}</span></div>
+            <div><label>Telepon</label><span>{{ order_row.telepon or '-' }}</span></div>
+            <div><label>Total Tagihan</label><span>{{ order_row.total_harga|idr }}</span></div>
+            <div><label>Kode Paket</label><span>{{ order_row.kode_paket or '-' }}</span></div>
+            <div><label>Dibuat</label><span>{{ order_row.tanggal_pesan.strftime('%d %b %Y %H:%M') if order_row.tanggal_pesan else '-' }}</span></div>
+            <div class="full"><label>Catatan Customer</label><span>{{ order_row.catatan or 'Belum ada catatan tambahan dari customer.' }}</span></div>
+        </div>
+    </div>
+
+    <div class="backoffice-panel">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">Payment</span>
+                <h2>Verifikasi Pembayaran</h2>
+            </div>
+        </div>
+        <div class="backoffice-info-grid">
+            <div><label>Status</label><span class="bo-badge {{ order_row.payment_meta.tone }}">{{ order_row.payment_meta.label }}</span></div>
+            <div><label>Metode</label><span>{{ order_row.payment_method_label }}</span></div>
+            <div><label>Provider</label><span>{{ order_row.gateway_provider_label }}</span></div>
+            <div><label>Ref</label><span>{{ order_row.payment_reference or '-' }}</span></div>
+            <div><label>Tanggal Bayar</label><span>{{ order_row.tanggal_pembayaran.strftime('%d %b %Y %H:%M') if order_row.tanggal_pembayaran else '-' }}</span></div>
+            <div><label>Diverifikasi Oleh</label><span>{{ order_row.payment_verified_by_name or 'Belum diverifikasi' }}</span></div>
+            <div class="full"><label>Catatan Verifikasi</label><span>{{ order_row.verification_note or order_row.payment_note or 'Belum ada catatan pembayaran.' }}</span></div>
+        </div>
+
+        {% if order_row.is_demo_payment %}
+        <div class="backoffice-note-box embedded" style="margin-top: 18px;">
+            <strong>Transaksi ini berasal dari mode presentasi guru</strong>
+            <p>Payment provider <strong>Demo QRIS Akademik</strong> dipakai untuk menunjukkan alur generate QR, perubahan status, dan pencatatan keuangan tanpa dana asli. Statusnya tetap ikut menggerakkan antrean tiket dan audit log seperti transaksi normal.</p>
+        </div>
+        {% endif %}
+
+        {% if order_row.payment_detail_display_rows %}
+        <div class="backoffice-mini-table">
+            {% for detail in order_row.payment_detail_display_rows %}
+            <div>
+                <label>{{ detail.label }}</label>
+                <span>{{ detail.value }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="backoffice-log-list dense payment-audit-timeline">
+            {% for log in payment_audit_rows %}
+            <article class="backoffice-log-item">
+                <div class="backoffice-log-dot"></div>
+                <div>
+                    <strong>{{ log.event_label }}</strong>
+                    <p>{{ log.message }}</p>
+                    <small>{{ log.actor_name or 'System' }} - {{ log.created_at.strftime('%d %b %Y %H:%M') if log.created_at else '-' }}</small>
+                </div>
+            </article>
+            {% else %}
+            <div class="backoffice-empty-inline">Belum ada audit pembayaran tersimpan untuk pesanan ini.</div>
+            {% endfor %}
+        </div>
+
+        <div class="backoffice-action-stack">
+            <form method="POST" class="backoffice-inline-form">
+                <input type="hidden" name="action" value="approve_payment">
+                <textarea name="action_note" rows="3" placeholder="Catatan saat menyetujui pembayaran">{{ order_row.verification_note or '' }}</textarea>
+                <button type="submit" class="btn-primary" {% if not order_row.pembayaran_id or order_row.status_pembayaran == 'berhasil' %}disabled{% endif %}>{{ 'Sudah Berhasil' if order_row.status_pembayaran == 'berhasil' else 'Setujui Pembayaran' }}</button>
+            </form>
+            <form method="POST" class="backoffice-inline-form warning">
+                <input type="hidden" name="action" value="reject_payment">
+                <textarea name="action_note" rows="3" placeholder="Alasan jika pembayaran perlu ditolak atau diminta ulang"></textarea>
+                <button type="submit" class="btn-outline-dark" {% if not order_row.pembayaran_id %}disabled{% endif %}>Tolak / Minta Ulang</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="backoffice-panel span-two">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">Operational</span>
+                <h2>Atur Tiket, Voucher, dan Follow Up</h2>
+            </div>
+        </div>
+        <form method="POST" class="backoffice-operational-form">
+            <input type="hidden" name="action" value="save_operational">
+
+            <div class="form-grid-two">
+                <div class="form-group">
+                    <label>Assign Petugas</label>
+                    <select name="assigned_staff_id">
+                        <option value="">Belum ditentukan</option>
+                        {% for staff in available_staff %}
+                        <option value="{{ staff.id }}" {% if order_row.assigned_staff_id == staff.id %}selected{% endif %}>
+                            {{ staff.nama_lengkap }} - {{ staff.role_label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Deadline Follow Up</label>
+                    <input type="datetime-local" name="deadline_follow_up" value="{{ order_row.deadline_follow_up.strftime('%Y-%m-%dT%H:%M') if order_row.deadline_follow_up else '' }}">
+                </div>
+            </div>
+
+            <div class="form-grid-four">
+                <div class="form-group">
+                    <label>Status Operasional</label>
+                    <select name="status_operasional">
+                        {% for option in operational_options %}
+                        <option value="{{ option }}" {% if order_row.status_operasional == option %}selected{% endif %}>
+                            {{ operational_meta[option].label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status Tiket</label>
+                    <select name="status_tiket">
+                        {% for option in ticket_options %}
+                        <option value="{{ option }}" {% if order_row.status_tiket == option %}selected{% endif %}>
+                            {{ ticket_meta[option].label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status Voucher</label>
+                    <select name="status_voucher">
+                        {% for option in voucher_options %}
+                        <option value="{{ option }}" {% if order_row.status_voucher == option %}selected{% endif %}>
+                            {{ voucher_meta[option].label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status Dokumen</label>
+                    <select name="status_dokumen">
+                        {% for option in document_options %}
+                        <option value="{{ option }}" {% if order_row.status_dokumen == option %}selected{% endif %}>
+                            {{ document_meta[option].label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Catatan Internal</label>
+                <textarea name="catatan_internal" rows="5" placeholder="Catatan follow up internal tim...">{{ order_row.catatan_internal or '' }}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Catatan Log Tambahan</label>
+                <textarea name="action_note" rows="3" placeholder="Catatan singkat yang ingin dicatat ke timeline pesanan"></textarea>
+            </div>
+
+            <div class="backoffice-form-actions">
+                <button type="submit" class="btn-primary">Simpan Update Operasional</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="backoffice-panel">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">Timeline</span>
+                <h2>Log Pesanan</h2>
+            </div>
+        </div>
+        <div class="backoffice-log-list dense">
+            {% for log in status_logs %}
+            <article class="backoffice-log-item">
+                <div class="backoffice-log-dot"></div>
+                <div>
+                    <strong>{{ log.status_label }}</strong>
+                    <p>{{ log.message }}</p>
+                    <small>{{ log.actor_name or 'System' }} - {{ log.created_at.strftime('%d %b %Y %H:%M') if log.created_at else '-' }}</small>
+                </div>
+            </article>
+            {% else %}
+            <div class="backoffice-empty-inline">Belum ada log operasional untuk pesanan ini.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="backoffice-panel">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">Peserta</span>
+                <h2>Data Peserta</h2>
+            </div>
+        </div>
+        <div class="backoffice-participant-list">
+            {% for participant in participant_rows %}
+            <article>
+                <strong>{{ participant.nama_peserta }}</strong>
+                <span>{{ participant.kewarganegaraan or 'Indonesia' }} - {{ participant.no_identitas or 'Identitas belum diisi' }}</span>
+            </article>
+            {% else %}
+            <div class="backoffice-empty-inline">Belum ada data peserta tambahan. Tim bisa melengkapinya nanti dari dashboard versi berikutnya.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

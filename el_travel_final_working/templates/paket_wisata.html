@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}{{ package_type.label }} - EL Travel{% endblock %}
+{% block content %}
+
+<section class="page-hero">
+    <div class="page-hero-bg">
+        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80" alt="Paket Wisata">
+        <div class="page-hero-overlay"></div>
+    </div>
+    <div class="page-hero-content">
+        <h1>{{ package_type.label }} <span class="accent">EL Travel</span></h1>
+        <p>
+            {% if current_negara %}
+                Paket {{ package_type.label|lower }} untuk perjalanan ke {{ current_negara }}.
+            {% elif current_benua %}
+                Katalog {{ package_type.label|lower }} untuk destinasi di kawasan {{ current_region_label|lower }}.
+            {% else %}
+                {{ package_type.headline }}
+            {% endif %}
+        </p>
+        <div class="breadcrumb">
+            <a href="{{ url_for('index') }}">Home</a> <i class="fas fa-chevron-right"></i>
+            <span>Paket Wisata</span>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding package-catalog-section">
+    <div class="container">
+        <div class="package-catalog-intro">
+            <div>
+                <span class="section-tag">Package Catalog</span>
+                <h2 class="section-title">{{ package_type.label }} dengan filter yang lebih rapi</h2>
+                <p class="section-sub">{{ package_type.summary }}</p>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            {% for item in nav_package_types %}
+            <a href="{{ url_for('paket_wisata', jenis=item.slug, benua=current_benua if current_benua else None, negara=current_negara if current_negara else None) }}"
+               class="filter-btn {% if current_package_type == item.slug %}active{% endif %}">
+                {{ item.label }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <div class="filter-bar continent-filter-bar">
+            <a href="{{ url_for('paket_wisata', jenis=current_package_type) }}"
+               class="filter-btn {% if not current_benua %}active{% endif %}">
+                Semua Benua
+            </a>
+            {% for region in nav_destination_regions %}
+            <a href="{{ url_for('paket_wisata', jenis=current_package_type, benua=region.slug) }}"
+               class="filter-btn {% if current_benua == region.slug %}active{% endif %}">
+                {{ region.label }}
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if current_benua and available_country_filters %}
+        <div class="country-filter-bar">
+            <a href="{{ url_for('paket_wisata', jenis=current_package_type, benua=current_benua) }}"
+               class="country-filter-btn {% if not current_negara %}active{% endif %}">
+                Semua Negara <span>{{ available_country_filters|length }}</span>
+            </a>
+            {% for country in available_country_filters %}
+            <a href="{{ url_for('paket_wisata', jenis=current_package_type, benua=current_benua, negara=country.label) }}"
+               class="country-filter-btn {% if current_negara == country.label %}active{% endif %}">
+                {{ country.label }} <span>{{ country.count }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if package_cards %}
+        <div class="trip-card-grid package-card-grid">
+            {% for item in package_cards %}
+            <article class="trip-card package-showcase-card">
+                <div class="trip-card-image">
+                    <img src="{{ item.foto }}" alt="{{ item.nama }}" loading="lazy"
+                         onerror="this.src='https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=80'">
+                    <span class="trip-card-type">{{ item.package_variant_accent }}</span>
+                </div>
+                <div class="trip-card-body">
+                    <h3>{{ item.trip_title }}</h3>
+
+                    <div class="trip-meta-row">
+                        <span><i class="fas fa-location-dot"></i> {{ item.country }}</span>
+                        <span><i class="fas fa-map-pin"></i> {{ item.nama }}</span>
+                    </div>
+
+                    <div class="trip-meta-row">
+                        <span><i class="fas fa-route"></i> {{ item.duration_code }}</span>
+                        <span><i class="fas fa-users"></i> {{ item.traveler_text }}</span>
+                    </div>
+
+                    <div class="trip-departure">
+                        <span class="trip-departure-label"><i class="fas fa-calendar-check"></i> Catatan keberangkatan</span>
+                        <ul>
+                            {% for departure in item.departure_items %}
+                            <li>{{ departure }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="package-card-note">
+                        <strong>{{ item.package_variant }}</strong>
+                        <p>{{ item.package_summary }}</p>
+                    </div>
+
+                    <div class="trip-card-footer">
+                        <div class="trip-price">
+                            <span>{{ item.price_caption }} dari {{ item.compare_price|idr }}</span>
+                            <strong>{{ item.start_price|idr }}</strong>
+                        </div>
+                        <a href="{{ item.detail_url }}" class="trip-detail-link">
+                            Detail <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% elif db_error %}
+        <div class="empty-state">
+            <i class="fas fa-database"></i>
+            <h3>Katalog Paket Belum Bisa Dimuat</h3>
+            <p>Pastikan MySQL sedang berjalan dan tabel paket sudah dapat dibaca oleh aplikasi.</p>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-suitcase-rolling"></i>
+            <h3>Paket Belum Tersedia</h3>
+            <p>Belum ada paket yang cocok dengan tipe dan wilayah yang dipilih. Coba ganti benua atau kembali ke semua paket.</p>
+            <a href="{{ url_for('paket_wisata', jenis=current_package_type) }}" class="btn-primary">Lihat Semua Paket</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

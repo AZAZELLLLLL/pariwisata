@@ -1,0 +1,451 @@
+{% extends 'backoffice/base.html' %}
+{% block title %}Kelola {{ destination_row.nama }} - Backoffice EL Travel{% endblock %}
+{% block backoffice_title %}Kelola {{ destination_row.nama }}{% endblock %}
+{% block backoffice_subtitle %}Perbarui detail destinasi, lalu atur paket keberangkatan yang akan tampil untuk user dari halaman ini.{% endblock %}
+{% block backoffice_header_actions %}
+<div class="backoffice-header-actions">
+    <a href="{{ url_for('backoffice_promotions') }}" class="btn-outline-dark">
+        <i class="fas fa-tags"></i> Kelola Promo
+    </a>
+    <a href="{{ url_for('detail_wisata', id=destination_row.id) }}" target="_blank" class="btn-primary">
+        <i class="fas fa-up-right-from-square"></i> Lihat Halaman Publik
+    </a>
+</div>
+{% endblock %}
+{% block backoffice_content %}
+{% set package_stats = namespace(active=0, featured=0, bookings=0) %}
+{% for paket in package_rows %}
+    {% if paket.status_paket == 'aktif' %}{% set package_stats.active = package_stats.active + 1 %}{% endif %}
+    {% if paket.is_featured %}{% set package_stats.featured = package_stats.featured + 1 %}{% endif %}
+    {% set package_stats.bookings = package_stats.bookings + (paket.booking_total or 0) %}
+{% endfor %}
+
+<section class="backoffice-detail-hero">
+    <div class="backoffice-detail-summary">
+        <img src="{{ destination_row.foto }}" alt="{{ destination_row.nama }}"
+             onerror="this.src='https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=80'">
+        <div>
+            <span class="section-tag">{{ destination_row.country_label }}</span>
+            <h2>{{ destination_row.nama }}</h2>
+            <p>{{ destination_row.lokasi }} - {{ destination_row.kategori }} - {{ destination_row.tipe|title }}</p>
+            <div class="backoffice-badge-row">
+                <span class="bo-badge {{ 'success' if destination_row.is_active else 'muted' }}">{{ 'Aktif' if destination_row.is_active else 'Nonaktif' }}</span>
+                <span class="bo-badge primary">{{ destination_row.benua or '-' }}</span>
+                <span class="bo-badge info">{{ package_rows|length }} paket</span>
+            </div>
+        </div>
+    </div>
+    <div class="backoffice-detail-quick-actions">
+        <a href="{{ url_for('backoffice_destinations') }}" class="btn-outline-dark">
+            <i class="fas fa-arrow-left"></i> Kembali ke Katalog
+        </a>
+        <form method="POST" onsubmit="return confirm('Hapus destinasi ini? Jika sudah punya histori pembelian, sistem akan mengarsipkan data secara aman.');">
+            <input type="hidden" name="action" value="delete_destination">
+            <button type="submit" class="btn-outline-dark danger">
+                <i class="fas fa-trash"></i> Hapus / Arsipkan Destinasi
+            </button>
+        </form>
+    </div>
+</section>
+
+<section class="backoffice-summary-strip three-up">
+    <article class="backoffice-summary-card">
+        <span>Total Paket</span>
+        <strong>{{ package_rows|length }}</strong>
+        <small>Semua paket yang terkait dengan destinasi ini.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Paket Aktif</span>
+        <strong>{{ package_stats.active }}</strong>
+        <small>Masih bisa dipesan customer dari website utama.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Booking Tercatat</span>
+        <strong>{{ package_stats.bookings }}</strong>
+        <small>Akumulasi pembelian paket pada destinasi ini.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Status Promo</span>
+        <strong>{{ destination_row.active_promo.badge_text if destination_row.active_promo else 'Normal' }}</strong>
+        <small>{{ destination_row.active_promo.promo_name if destination_row.active_promo else 'Belum ada diskon aktif yang berjalan.' }}</small>
+    </article>
+</section>
+
+<section class="backoffice-detail-grid">
+    <div class="backoffice-panel span-two">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">Destination</span>
+                <h2>Edit Detail Destinasi</h2>
+            </div>
+        </div>
+        <form method="POST" class="backoffice-operational-form">
+            <input type="hidden" name="action" value="save_destination">
+
+            <div class="form-grid-two">
+                <div class="form-group">
+                    <label>Nama Destinasi</label>
+                    <input type="text" name="nama" value="{{ destination_row.nama }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Tipe</label>
+                    <select name="tipe">
+                        {% for type_value in type_options %}
+                        <option value="{{ type_value }}" {% if destination_row.tipe == type_value %}selected{% endif %}>{{ type_value|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid-four">
+                <div class="form-group">
+                    <label>Kota / Lokasi</label>
+                    <input type="text" name="lokasi" value="{{ destination_row.lokasi }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Negara</label>
+                    <input type="text" name="negara" value="{{ destination_row.negara }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Wilayah</label>
+                    <select name="benua">
+                        {% for region in region_options %}
+                        <option value="{{ region.slug }}" {% if destination_row.region_slug == region.slug %}selected{% endif %}>{{ region.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select name="kategori">
+                        {% for category in category_options %}
+                        <option value="{{ category }}" {% if destination_row.kategori == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid-four">
+                <div class="form-group">
+                    <label>Rating</label>
+                    <input type="number" step="0.1" min="0" max="5" name="rating" value="{{ destination_row.rating }}">
+                </div>
+                <div class="form-group">
+                    <label>Display Order</label>
+                    <input type="number" min="1" name="display_order" value="{{ destination_row.display_order or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Best Time</label>
+                    <input type="text" name="best_time" value="{{ destination_row.best_time or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="is_active">
+                        <option value="1" {% if destination_row.is_active %}selected{% endif %}>Aktif</option>
+                        <option value="0" {% if not destination_row.is_active %}selected{% endif %}>Nonaktif</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Deskripsi Destinasi</label>
+                <textarea name="deskripsi" rows="5" required>{{ destination_row.deskripsi }}</textarea>
+            </div>
+
+            <div class="form-grid-two">
+                <div class="form-group">
+                    <label>Foto Utama</label>
+                    <input type="url" name="foto" value="{{ destination_row.foto or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Google Maps URL</label>
+                    <input type="url" name="maps_url" value="{{ destination_row.maps_url or '' }}">
+                </div>
+            </div>
+
+            <div class="form-grid-two">
+                <div class="form-group">
+                    <label>Thumbnail Foto</label>
+                    <input type="url" name="thumbnail_foto" value="{{ destination_row.thumbnail_foto or destination_row.image_thumbnail or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Moment Foto</label>
+                    <input type="url" name="moment_foto" value="{{ destination_row.moment_foto or destination_row.moment_image or '' }}">
+                </div>
+            </div>
+
+            <div class="form-grid-two">
+                <div class="form-group">
+                    <label>Label Sumber Foto</label>
+                    <input type="text" name="foto_source_label" value="{{ destination_row.foto_source_label or destination_row.image_source_label or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Link Sumber Foto</label>
+                    <input type="url" name="foto_source_url" value="{{ destination_row.foto_source_url or destination_row.image_source_url or '' }}">
+                </div>
+            </div>
+
+            <div class="backoffice-form-actions">
+                <button type="submit" class="btn-primary">Simpan Perubahan Destinasi</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="backoffice-panel span-two">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">Departure</span>
+                <h2>Kelola Paket dan Keberangkatan</h2>
+            </div>
+        </div>
+
+        <div class="backoffice-package-list">
+            {% for paket in package_rows %}
+            <article class="backoffice-package-card">
+                <div class="backoffice-card-topline">
+                    <strong>{{ paket.nama_paket }}</strong>
+                    <div class="backoffice-badge-row">
+                        {% if paket.has_active_promo %}
+                        <span class="bo-badge warning">{{ paket.promo_badge or 'Promo Aktif' }}</span>
+                        {% endif %}
+                        <span class="bo-badge {{ 'success' if paket.status_paket == 'aktif' else ('warning' if paket.status_paket == 'draft' else 'muted') }}">{{ paket.status_paket|title }}</span>
+                    </div>
+                </div>
+                {% if paket.has_active_promo %}
+                <div class="backoffice-price-pair">
+                    <div>
+                        <small>Harga normal</small>
+                        <span>{{ paket.display_original_price|idr }}</span>
+                    </div>
+                    <div>
+                        <small>Harga promo</small>
+                        <strong>{{ paket.display_discounted_price|idr }}</strong>
+                    </div>
+                </div>
+                <p>{{ paket.durasi }} - {{ paket.booking_total }} booking - {{ paket.promo_title or 'Promo destinasi aktif' }}</p>
+                {% else %}
+                <div class="backoffice-price-pair single">
+                    <div>
+                        <small>Harga jual</small>
+                        <strong>{{ paket.harga|idr }}</strong>
+                    </div>
+                </div>
+                <p>{{ paket.durasi }} - {{ paket.booking_total }} booking</p>
+                {% endif %}
+                <div class="backoffice-capacity">
+                    <div class="backoffice-capacity-bar">
+                        <span style="width: {{ ((paket.kuota_tersedia or 0) * 100 / ((paket.kuota_total or 1) if (paket.kuota_total or 0) > 0 else 1))|round(0, 'floor') }}%;"></span>
+                    </div>
+                    <small>Kuota tersedia {{ paket.kuota_tersedia or 0 }} dari {{ paket.kuota_total or paket.max_orang or 0 }}</small>
+                </div>
+                <form method="POST" class="backoffice-operational-form compact-form">
+                    <input type="hidden" name="action" value="update_package">
+                    <input type="hidden" name="paket_id" value="{{ paket.id }}">
+
+                    <div class="form-grid-two">
+                        <div class="form-group">
+                            <label>Nama Paket</label>
+                            <input type="text" name="nama_paket" value="{{ paket.nama_paket }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Kode Paket</label>
+                            <input type="text" name="kode_paket" value="{{ paket.kode_paket or '' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-four">
+                        <div class="form-group">
+                            <label>Jenis</label>
+                            <select name="jenis_paket">
+                                {% for option in package_kind_options %}
+                                <option value="{{ option }}" {% if paket.jenis_paket == option %}selected{% endif %}>{{ option|title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select name="status_paket">
+                                {% for option in package_status_options %}
+                                <option value="{{ option }}" {% if paket.status_paket == option %}selected{% endif %}>{{ option|title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Harga</label>
+                            <input type="number" min="1" name="harga" value="{{ paket.harga }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Durasi</label>
+                            <input type="text" name="durasi" value="{{ paket.durasi }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-four">
+                        <div class="form-group">
+                            <label>Min Orang</label>
+                            <input type="number" min="1" name="min_orang" value="{{ paket.min_orang }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Orang</label>
+                            <input type="number" min="1" name="max_orang" value="{{ paket.max_orang }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Kuota Total</label>
+                            <input type="number" min="1" name="kuota_total" value="{{ paket.kuota_total or paket.max_orang }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Kuota Tersedia</label>
+                            <input type="number" min="0" name="kuota_tersedia" value="{{ paket.kuota_tersedia or paket.kuota_total or paket.max_orang }}">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-two">
+                        <div class="form-group">
+                            <label>Meeting Point</label>
+                            <input type="text" name="meeting_point" value="{{ paket.meeting_point or '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Featured</label>
+                            <select name="is_featured">
+                                <option value="1" {% if paket.is_featured %}selected{% endif %}>Ya</option>
+                                <option value="0" {% if not paket.is_featured %}selected{% endif %}>Tidak</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Info Keberangkatan</label>
+                        <textarea name="keberangkatan_info" rows="3">{{ paket.keberangkatan_info or '' }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Fasilitas</label>
+                        <textarea name="fasilitas" rows="3">{{ paket.fasilitas or '' }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Deskripsi Paket</label>
+                        <textarea name="deskripsi_paket" rows="3">{{ paket.deskripsi or '' }}</textarea>
+                    </div>
+                    <div class="backoffice-form-actions">
+                        <button type="submit" class="btn-primary">Simpan Paket</button>
+                    </div>
+                </form>
+                <form method="POST" class="backoffice-inline-delete" onsubmit="return confirm('Hapus paket ini? Jika sudah pernah dibeli, sistem akan mengubah statusnya menjadi nonaktif.');">
+                    <input type="hidden" name="action" value="delete_package">
+                    <input type="hidden" name="paket_id" value="{{ paket.id }}">
+                    <button type="submit" class="btn-outline-dark danger">
+                        <i class="fas fa-trash"></i> Hapus / Arsipkan Paket
+                    </button>
+                </form>
+            </article>
+            {% else %}
+            <div class="backoffice-empty-inline">Destinasi ini belum punya paket. Tambahkan paket pertama dari form di bawah.</div>
+            {% endfor %}
+        </div>
+
+        <div class="backoffice-subpanel">
+            <div class="backoffice-panel-head">
+                <div>
+                    <span class="section-tag">New Package</span>
+                    <h2>Tambah Paket Keberangkatan</h2>
+                </div>
+            </div>
+            <div class="backoffice-note-box">
+                <strong>Aturan paket</strong>
+                <p>Kalau destinasi sedang punya promo aktif, harga paket di website publik akan otomatis mengikuti diskon destinasi. Saat promo berakhir, harga kembali ke nominal normal tanpa input ulang.</p>
+            </div>
+            <form method="POST" class="backoffice-operational-form">
+                <input type="hidden" name="action" value="create_package">
+
+                <div class="form-grid-two">
+                    <div class="form-group">
+                        <label>Nama Paket</label>
+                        <input type="text" name="nama_paket" placeholder="Contoh: Santorini Sunset Escape" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kode Paket</label>
+                        <input type="text" name="kode_paket" placeholder="Boleh kosong, nanti otomatis dibuat">
+                    </div>
+                </div>
+
+                <div class="form-grid-four">
+                    <div class="form-group">
+                        <label>Jenis Paket</label>
+                        <select name="jenis_paket">
+                            {% for option in package_kind_options %}
+                            <option value="{{ option }}">{{ option|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="status_paket">
+                            {% for option in package_status_options %}
+                            <option value="{{ option }}">{{ option|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Harga</label>
+                        <input type="number" min="1" name="harga" placeholder="15000000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Durasi</label>
+                        <input type="text" name="durasi" placeholder="5 Hari / 4 Malam" required>
+                    </div>
+                </div>
+
+                <div class="form-grid-four">
+                    <div class="form-group">
+                        <label>Min Orang</label>
+                        <input type="number" min="1" name="min_orang" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Orang</label>
+                        <input type="number" min="1" name="max_orang" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Kuota Total</label>
+                        <input type="number" min="1" name="kuota_total" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Kuota Tersedia</label>
+                        <input type="number" min="0" name="kuota_tersedia" value="10">
+                    </div>
+                </div>
+
+                <div class="form-grid-two">
+                    <div class="form-group">
+                        <label>Meeting Point</label>
+                        <input type="text" name="meeting_point" placeholder="Contoh: Bandara Soekarno-Hatta">
+                    </div>
+                    <div class="form-group">
+                        <label>Featured</label>
+                        <select name="is_featured">
+                            <option value="0">Tidak</option>
+                            <option value="1">Ya</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Info Keberangkatan</label>
+                    <textarea name="keberangkatan_info" rows="3" placeholder="Contoh: Berangkat setiap Jumat atau sesuai permintaan grup"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Fasilitas</label>
+                    <textarea name="fasilitas" rows="3" placeholder="Contoh: Hotel, breakfast, transport lokal"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi Paket</label>
+                    <textarea name="deskripsi_paket" rows="3" placeholder="Ringkasan isi paket keberangkatan"></textarea>
+                </div>
+
+                <div class="backoffice-form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-plus"></i> Tambah Paket Baru
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

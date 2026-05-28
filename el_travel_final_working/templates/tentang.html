@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Tentang Kami - EL Travel{% endblock %}
+{% block content %}
+
+<section class="page-hero small">
+    <div class="page-hero-bg">
+        <img src="https://images.unsplash.com/photo-1519046904884-53103b34b206?w=1400" alt="Tentang">
+        <div class="page-hero-overlay"></div>
+    </div>
+    <div class="page-hero-content">
+        <h1>Tentang <span class="accent">EL Travel</span></h1>
+        <p>Mitra perjalanan terpercaya Anda sejak 2016</p>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container">
+        <div class="about-grid">
+            <div class="about-img">
+                <img src="https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=700" alt="EL Travel Team">
+                <div class="about-badge">
+                    <span class="big-num">8+</span>
+                    <span>Tahun Melayani</span>
+                </div>
+            </div>
+            <div class="about-content">
+                <span class="section-tag">Tentang Kami</span>
+                <h2 class="section-title">Kami Adalah <span class="accent">EL Travel</span></h2>
+                <p>{{ company_profile.summary }}</p>
+                <p>{{ company_profile.headline }}</p>
+                
+                <div class="about-features">
+                    <div class="af-item"><i class="fas fa-certificate"></i> Operasional sejak {{ site_contact.founded_year }}</div>
+                    <div class="af-item"><i class="fas fa-shield-alt"></i> Asuransi Perjalanan</div>
+                    <div class="af-item"><i class="fas fa-headset"></i> Customer Service 24/7</div>
+                    <div class="af-item"><i class="fas fa-undo"></i> Garansi Refund</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="visi" class="visi-misi section-padding">
+            <div class="vm-card">
+                <div class="vm-icon"><i class="fas fa-eye"></i></div>
+                <h3>Visi</h3>
+                <p>Menjadi agen perjalanan wisata terdepan di Indonesia yang mempromosikan keindahan nusantara kepada dunia.</p>
+            </div>
+            <div class="vm-card">
+                <div class="vm-icon"><i class="fas fa-bullseye"></i></div>
+                <h3>Misi</h3>
+                <ul>
+                    <li>Menyediakan paket wisata berkualitas dengan harga terjangkau</li>
+                    <li>Memberikan pelayanan prima dan profesional</li>
+                    <li>Mendukung pariwisata berkelanjutan Indonesia</li>
+                    <li>Menciptakan kenangan indah bagi setiap pelanggan</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="sertifikat" class="visi-misi section-padding">
+            {% for item in company_profile.trust_points %}
+            <div class="vm-card">
+                <div class="vm-icon"><i class="fas fa-shield-check"></i></div>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.text }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="detail-card">
+            <span class="section-tag">Lisensi &amp; Sertifikat</span>
+            <h2 class="section-title">Informasi legalitas dan pola kerja kami</h2>
+            <div class="paket-fasilitas">
+                <ul>
+                    {% for license_item in company_profile.licenses %}
+                    <li><i class="fas fa-check"></i> {{ license_item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

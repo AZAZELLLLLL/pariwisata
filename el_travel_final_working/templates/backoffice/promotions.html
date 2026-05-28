@@ -1,0 +1,267 @@
+{% extends 'backoffice/base.html' %}
+{% block title %}Promo & Diskon - Backoffice EL Travel{% endblock %}
+{% block backoffice_title %}Kelola Promo dan Diskon{% endblock %}
+{% block backoffice_subtitle %}Atur diskon destinasi, periode aktifnya, dan pastikan harga promo otomatis tampil ke user hanya selama masa berlaku.{% endblock %}
+{% block backoffice_header_actions %}
+<div class="backoffice-header-actions">
+    <a href="{{ url_for('backoffice_destinations') }}" class="btn-outline-dark">
+        <i class="fas fa-map-location-dot"></i> Lihat Destinasi
+    </a>
+    <a href="{{ url_for('promo') }}" target="_blank" class="btn-primary">
+        <i class="fas fa-up-right-from-square"></i> Buka Halaman Promo
+    </a>
+</div>
+{% endblock %}
+{% block backoffice_content %}
+{% set promo_stats = namespace(active=0, upcoming=0, expired=0, inactive=0) %}
+{% for promo in promo_rows %}
+    {% if promo.status_key == 'active' %}{% set promo_stats.active = promo_stats.active + 1 %}{% endif %}
+    {% if promo.status_key == 'upcoming' %}{% set promo_stats.upcoming = promo_stats.upcoming + 1 %}{% endif %}
+    {% if promo.status_key == 'expired' %}{% set promo_stats.expired = promo_stats.expired + 1 %}{% endif %}
+    {% if promo.status_key == 'inactive' %}{% set promo_stats.inactive = promo_stats.inactive + 1 %}{% endif %}
+{% endfor %}
+
+<section class="backoffice-summary-strip three-up">
+    <article class="backoffice-summary-card">
+        <span>Promo Aktif</span>
+        <strong>{{ promo_stats.active }}</strong>
+        <small>Sedang tampil di halaman promo publik.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Segera Mulai</span>
+        <strong>{{ promo_stats.upcoming }}</strong>
+        <small>Campaign sudah dijadwalkan tetapi belum berjalan.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Sudah Berakhir</span>
+        <strong>{{ promo_stats.expired }}</strong>
+        <small>Harga sudah kembali normal secara otomatis.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Manual Nonaktif</span>
+        <strong>{{ promo_stats.inactive }}</strong>
+        <small>Promo dimatikan dari dashboard internal.</small>
+    </article>
+</section>
+
+<section class="backoffice-filter-strip">
+    <form method="GET" class="backoffice-filter-form">
+        <div class="form-group">
+            <label>Status Promo</label>
+            <select name="status">
+                <option value="">Semua status</option>
+                {% for status_key, status_meta in promo_status_meta.items() %}
+                <option value="{{ status_key }}" {% if current_status_filter == status_key %}selected{% endif %}>{{ status_meta.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="backoffice-filter-actions">
+            <button type="submit" class="btn-primary">Terapkan</button>
+            <a href="{{ url_for('backoffice_promotions') }}" class="btn-outline-dark">Reset</a>
+        </div>
+    </form>
+</section>
+
+<section class="backoffice-detail-grid">
+    <div class="backoffice-panel span-two">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">New Promo</span>
+                <h2>Tambah Promo Baru</h2>
+            </div>
+        </div>
+        <div class="backoffice-note-box">
+            <strong>Catatan promo</strong>
+            <p>Selama status promo aktif dan periodenya masih berjalan, harga paket destinasi akan ikut turun otomatis. Saat waktunya habis, menu promo publik akan membersihkan destinasi yang sudah tidak diskon.</p>
+        </div>
+        <form method="POST" class="backoffice-operational-form">
+            <input type="hidden" name="action" value="create_promo">
+
+            <div class="form-grid-two">
+                <div class="form-group">
+                    <label>Destinasi</label>
+                    <select name="wisata_id" required>
+                        <option value="">Pilih destinasi</option>
+                        {% for item in destination_options %}
+                        <option value="{{ item.id }}">{{ item.nama }} - {{ item.negara or item.benua }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nama Promo</label>
+                    <input type="text" name="promo_name" placeholder="Contoh: Mid Year Escape" required>
+                </div>
+            </div>
+
+            <div class="form-grid-four">
+                <div class="form-group">
+                    <label>Label Ringkas</label>
+                    <input type="text" name="promo_label" placeholder="Contoh: Summer Deal">
+                </div>
+                <div class="form-group">
+                    <label>Tipe Diskon</label>
+                    <select name="discount_type">
+                        {% for option in discount_type_options %}
+                        <option value="{{ option.value }}">{{ option.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nilai Diskon</label>
+                    <input type="number" min="1" name="discount_value" placeholder="10 atau 500000" required>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="is_active">
+                        <option value="1">Aktif</option>
+                        <option value="0">Nonaktif</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid-two">
+                <div class="form-group">
+                    <label>Mulai Berlaku</label>
+                    <input type="datetime-local" name="starts_at" required>
+                </div>
+                <div class="form-group">
+                    <label>Masa Berakhir</label>
+                    <input type="datetime-local" name="ends_at" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Keterangan Promo</label>
+                <textarea name="description" rows="4" placeholder="Jelaskan syarat, konteks promo, atau campaign singkat untuk admin dan tampilan user."></textarea>
+            </div>
+
+            <div class="backoffice-form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-plus"></i> Simpan Promo
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="backoffice-panel span-two">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">Active List</span>
+                <h2>Daftar Promo Destinasi</h2>
+            </div>
+        </div>
+
+        <div class="backoffice-package-list">
+            {% for promo in promo_rows %}
+            <article class="backoffice-package-card promo-admin-card">
+                <div class="backoffice-card-topline">
+                    <strong>{{ promo.promo_name }}</strong>
+                    <span class="bo-badge {{ promo.status_meta.tone }}">{{ promo.status_meta.label }}</span>
+                </div>
+                <div class="backoffice-price-pair single promo-price-box">
+                    <div>
+                        <small>Nilai promo</small>
+                        <strong>{{ promo.badge_text }}</strong>
+                    </div>
+                </div>
+                <p>{{ promo.wisata_nama }} - Harga mulai {{ promo.min_package_price|idr if promo.min_package_price else '-' }}</p>
+                <small class="promo-admin-meta">
+                    Dibuat {{ promo.created_at.strftime('%d %b %Y %H:%M') if promo.created_at else '-' }}
+                    {% if promo.created_by_name %} oleh {{ promo.created_by_name }}{% endif %}
+                </small>
+                <div class="backoffice-mini-table promo-admin-stats">
+                    <div>
+                        <label>Periode</label>
+                        <span>{{ promo.starts_at.strftime('%d %b %Y %H:%M') if promo.starts_at else '-' }} - {{ promo.ends_at.strftime('%d %b %Y %H:%M') if promo.ends_at else '-' }}</span>
+                    </div>
+                    <div>
+                        <label>Status Harga</label>
+                        <span>{{ 'Diskon sedang diterapkan ke website' if promo.status_key == 'active' else 'Menunggu jadwal / kembali normal' }}</span>
+                    </div>
+                    <div class="full">
+                        <label>Keterangan</label>
+                        <span>{{ promo.description or 'Belum ada keterangan promo tambahan.' }}</span>
+                    </div>
+                </div>
+
+                <form method="POST" class="backoffice-operational-form compact-form">
+                    <input type="hidden" name="action" value="update_promo">
+                    <input type="hidden" name="promo_id" value="{{ promo.id }}">
+
+                    <div class="form-grid-two">
+                        <div class="form-group">
+                            <label>Destinasi</label>
+                            <select name="wisata_id" required>
+                                {% for item in destination_options %}
+                                <option value="{{ item.id }}" {% if promo.wisata_id == item.id %}selected{% endif %}>{{ item.nama }} - {{ item.negara or item.benua }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Promo</label>
+                            <input type="text" name="promo_name" value="{{ promo.promo_name }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-four">
+                        <div class="form-group">
+                            <label>Label Ringkas</label>
+                            <input type="text" name="promo_label" value="{{ promo.promo_label or '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipe Diskon</label>
+                            <select name="discount_type">
+                                {% for option in discount_type_options %}
+                                <option value="{{ option.value }}" {% if promo.discount_type == option.value %}selected{% endif %}>{{ option.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nilai Diskon</label>
+                            <input type="number" min="1" name="discount_value" value="{{ promo.discount_value }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select name="is_active">
+                                <option value="1" {% if promo.is_active %}selected{% endif %}>Aktif</option>
+                                <option value="0" {% if not promo.is_active %}selected{% endif %}>Nonaktif</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-two">
+                        <div class="form-group">
+                            <label>Mulai Berlaku</label>
+                            <input type="datetime-local" name="starts_at" value="{{ promo.starts_at.strftime('%Y-%m-%dT%H:%M') if promo.starts_at else '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Masa Berakhir</label>
+                            <input type="datetime-local" name="ends_at" value="{{ promo.ends_at.strftime('%Y-%m-%dT%H:%M') if promo.ends_at else '' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Keterangan Promo</label>
+                        <textarea name="description" rows="3">{{ promo.description or '' }}</textarea>
+                    </div>
+
+                    <div class="backoffice-form-actions split">
+                        <button type="submit" class="btn-primary">Simpan Promo</button>
+                    </div>
+                </form>
+
+                <form method="POST" class="backoffice-inline-delete" onsubmit="return confirm('Hapus promo ini dari sistem?');">
+                    <input type="hidden" name="action" value="delete_promo">
+                    <input type="hidden" name="promo_id" value="{{ promo.id }}">
+                    <button type="submit" class="btn-outline-dark danger">
+                        <i class="fas fa-trash"></i> Hapus Promo
+                    </button>
+                </form>
+            </article>
+            {% else %}
+            <div class="backoffice-empty-inline">Belum ada promo yang tersimpan. Buat promo pertama dari form di atas.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

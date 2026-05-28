@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EL Travel - Jelajahi Dunia Bersama Kami{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <a href="{{ url_for('index') }}" class="nav-logo">
+            <span class="logo-el">EL</span><span class="logo-travel"> Travel</span>
+        </a>
+
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="{{ url_for('index') }}" class="nav-link">Home</a></li>
+
+            <li class="dropdown">
+                <a href="#" class="nav-link dropdown-toggle">Destinasi <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown-menu">
+                    {% for region in nav_destination_regions %}
+                    <a href="{{ url_for('destinasi', benua=region.slug) }}" class="dropdown-link-rich">
+                        <i class="fas {{ region.icon }}"></i>
+                        <span>
+                            <strong>{{ region.label }}</strong>
+                            <small>{{ region.hint }}</small>
+                        </span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </li>
+
+            <li class="dropdown">
+                <a href="#" class="nav-link dropdown-toggle">Paket Wisata <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown-menu">
+                    {% for package_type in nav_package_types %}
+                    <a href="{{ url_for('paket_wisata', jenis=package_type.slug) }}" class="dropdown-link-rich">
+                        <i class="fas {{ package_type.icon }}"></i>
+                        <span>
+                            <strong>{{ package_type.label }}</strong>
+                            <small>{{ package_type.hint }}</small>
+                        </span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </li>
+
+            <li><a href="{{ url_for('promo') }}" class="nav-link">Promo</a></li>
+
+            <li class="dropdown">
+                <a href="#" class="nav-link dropdown-toggle">Tentang Kami <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown-menu">
+                    <a href="{{ url_for('tentang') }}" class="dropdown-link-rich">
+                        <i class="fas fa-building"></i>
+                        <span>
+                            <strong>Profil Perusahaan</strong>
+                            <small>Cerita singkat, posisi brand, dan arah layanan EL Travel</small>
+                        </span>
+                    </a>
+                    <a href="{{ url_for('tentang') }}#visi" class="dropdown-link-rich">
+                        <i class="fas fa-eye"></i>
+                        <span>
+                            <strong>Visi &amp; Misi</strong>
+                            <small>Prinsip yang kami pakai untuk menyusun pengalaman perjalanan</small>
+                        </span>
+                    </a>
+                    <a href="{{ url_for('tentang') }}#sertifikat" class="dropdown-link-rich">
+                        <i class="fas fa-certificate"></i>
+                        <span>
+                            <strong>Lisensi &amp; Sertifikat</strong>
+                            <small>Informasi legalitas dan pola kerja sama operasional</small>
+                        </span>
+                    </a>
+                </div>
+            </li>
+
+            <li><a href="{{ url_for('status_pesanan') }}" class="nav-link">Status Pesanan</a></li>
+            <li><a href="{{ url_for('kontak') }}" class="nav-link">Kontak</a></li>
+
+            {% if current_user %}
+            <li class="dropdown nav-account-item">
+                <a href="#" class="nav-link dropdown-toggle nav-user-link">
+                    {% if current_user.picture %}
+                    <img src="{{ current_user.picture }}" alt="{{ current_user.name }}" class="nav-user-avatar">
+                    {% else %}
+                    <span class="nav-user-avatar fallback">{{ current_user.name[:1] }}</span>
+                    {% endif %}
+                    <span class="nav-user-name">{{ current_user.name }}</span>
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="dropdown-menu auth-dropdown-menu">
+                    <a href="{{ url_for('status_pesanan') }}" class="dropdown-link-rich">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>
+                            <strong>Status Pesanan</strong>
+                            <small>Lihat tiket, pembayaran, dan progres perjalanan Anda</small>
+                        </span>
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="dropdown-link-rich">
+                        <i class="fas fa-right-from-bracket"></i>
+                        <span>
+                            <strong>Logout</strong>
+                            <small>Keluar dari sesi akun saat ini</small>
+                        </span>
+                    </a>
+                </div>
+            </li>
+            {% else %}
+            <li>
+                <a href="{{ url_for('login') }}" class="nav-login-btn">
+                    <i class="fas fa-user-lock"></i> Sign in / Login
+                </a>
+            </li>
+            {% endif %}
+
+            <li>
+                <a href="{{ whatsapp_link('Halo EL Travel, saya ingin bertanya tentang paket wisata.') }}"
+                   target="_blank" class="nav-btn-wa">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+            </li>
+        </ul>
+
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</nav>
+
+{% block flash_messages %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-container">
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+        <span>{{ message }}</span>
+        <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+{% endblock %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer class="footer">
+    <div class="footer-top">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-el">EL</span><span class="logo-travel"> Travel</span>
+                </div>
+                <p>{{ company_profile.summary }}</p>
+                <div class="social-links">
+                    <a href="{{ site_social.instagram }}" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="{{ site_social.facebook }}" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="{{ site_social.tiktok }}" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                    <a href="{{ site_social.youtube }}" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="{{ whatsapp_link('Halo EL Travel, saya ingin terhubung dengan admin.') }}" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>Destinasi Populer</h4>
+                <ul>
+                    <li><a href="{{ url_for('destinasi', benua='asia') }}">Destinasi Asia</a></li>
+                    <li><a href="{{ url_for('destinasi', benua='eropa') }}">Destinasi Eropa</a></li>
+                    <li><a href="{{ url_for('destinasi', benua='amerika') }}">Destinasi Amerika</a></li>
+                    <li><a href="{{ url_for('destinasi', negara='Indonesia') }}">Indonesia</a></li>
+                    <li><a href="{{ url_for('destinasi', negara='Jepang') }}">Jepang</a></li>
+                    <li><a href="{{ url_for('destinasi', negara='Prancis') }}">Prancis</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Layanan</h4>
+                <ul>
+                    <li><a href="{{ url_for('paket_wisata', jenis='pasangan') }}">Paket Pasangan</a></li>
+                    <li><a href="{{ url_for('paket_wisata', jenis='keluarga') }}">Paket Keluarga</a></li>
+                    <li><a href="{{ url_for('paket_wisata', jenis='solo') }}">Paket Solo</a></li>
+                    <li><a href="{{ url_for('paket_wisata', jenis='grup') }}">Paket Grup</a></li>
+                    <li><a href="{{ url_for('promo') }}">Promo Destinasi</a></li>
+                    <li><a href="{{ url_for('kontak') }}">Konsultasi Admin</a></li>
+                    <li><a href="{{ url_for('status_pesanan') }}">Status Pesanan</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Bantuan</h4>
+                <ul>
+                    <li><a href="{{ url_for('tentang') }}">Tentang EL Travel</a></li>
+                    <li><a href="{{ url_for('tentang') }}#sertifikat">Lisensi &amp; Sertifikat</a></li>
+                    <li><a href="{{ url_for('promo') }}">Lihat Promo</a></li>
+                    <li><a href="{{ url_for('login') }}">Login Akun</a></li>
+                    <li><a href="{{ url_for('status_pesanan') }}">Lacak Pesanan</a></li>
+                    <li><a href="{{ url_for('kontak') }}">Hubungi Kami</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Kontak Kami</h4>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ site_contact.address_short }}</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <a href="tel:+{{ site_contact.phone_raw }}">{{ site_contact.phone_display }}</a>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <a href="mailto:{{ site_contact.email }}">{{ site_contact.email }}</a>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ site_contact.hours[0] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 EL Travel. Semua hak dilindungi. Dibuat untuk para penjelajah lokal dan internasional.</p>
+    </div>
+</footer>
+
+<a href="{{ whatsapp_link('Halo EL Travel!') }}" target="_blank" class="wa-float" aria-label="Chat WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

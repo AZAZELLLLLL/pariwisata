@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="error-section">
+    <div class="error-container">
+        <div class="error-code">500</div>
+        <h1>Server Error</h1>
+        <p>Maaf, terjadi kesalahan pada server kami. Tim kami akan segera memperbaikinya.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Kembali ke Beranda</a>
+    </div>
+</section>
+
+<style>
+.error-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--navy) 0%, #2c5282 100%);
+    padding: 40px 20px;
+}
+
+.error-container {
+    text-align: center;
+    color: white;
+}
+
+.error-code {
+    font-size: 120px;
+    font-weight: bold;
+    color: var(--gold);
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.error-container h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.error-container p {
+    font-size: 18px;
+    margin-bottom: 30px;
+    color: rgba(255,255,255,0.9);
+}
+
+.btn {
+    padding: 12px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+    display: inline-block;
+}
+
+.btn-primary {
+    background: var(--gold);
+    color: var(--navy);
+}
+
+.btn-primary:hover {
+    background: #daa520;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(218,165,32,0.3);
+}
+</style>
+{% endblock %}

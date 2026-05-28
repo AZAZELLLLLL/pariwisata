@@ -1,0 +1,243 @@
+{% extends 'backoffice/base.html' %}
+{% block title %}Keuangan - Backoffice EL Travel{% endblock %}
+{% block backoffice_title %}Keuangan dan Riwayat Pembayaran{% endblock %}
+{% block backoffice_subtitle %}Pantau pembayaran masuk, transaksi yang masih menunggu verifikasi, dan nominal yang sudah terkonfirmasi dari dashboard internal.{% endblock %}
+{% block backoffice_header_actions %}
+<div class="backoffice-header-actions">
+    <a href="{{ url_for('backoffice_finance_export', q=current_search_query, status=current_status_filter, method=current_method_filter) }}" class="btn-outline-dark">
+        <i class="fas fa-file-csv"></i> Export CSV
+    </a>
+    <a href="{{ url_for('backoffice_orders') }}" class="btn-primary">
+        <i class="fas fa-receipt"></i> Buka Workspace Pesanan
+    </a>
+</div>
+{% endblock %}
+{% block backoffice_content %}
+<section class="backoffice-kpi-grid finance-kpi-grid">
+    <article class="backoffice-kpi-card dark">
+        <span>Total Transaksi</span>
+        <strong>{{ finance_summary.total_transactions }}</strong>
+        <small>Semua transaksi yang sudah masuk ke tabel pembayaran.</small>
+    </article>
+    <article class="backoffice-kpi-card warning">
+        <span>Menunggu Verifikasi</span>
+        <strong>{{ finance_summary.waiting_review }}</strong>
+        <small>Perlu diproses oleh tim finance atau owner.</small>
+    </article>
+    <article class="backoffice-kpi-card success">
+        <span>Dana Terkonfirmasi</span>
+        <strong>{{ finance_summary.confirmed_amount|idr }}</strong>
+        <small>Akumulasi pembayaran yang statusnya sudah berhasil.</small>
+    </article>
+    <article class="backoffice-kpi-card info">
+        <span>Nominal Manual</span>
+        <strong>{{ finance_summary.manual_amount|idr }}</strong>
+        <small>Total transaksi dari transfer manual, QRIS, atau e-wallet manual.</small>
+    </article>
+    <article class="backoffice-kpi-card primary">
+        <span>Transaksi Demo</span>
+        <strong>{{ finance_summary.demo_transactions }}</strong>
+        <small>Flow akademik yang memakai QRIS simulasi untuk presentasi atau pengujian.</small>
+    </article>
+    <article class="backoffice-kpi-card success">
+        <span>Nominal Demo</span>
+        <strong>{{ finance_summary.demo_amount|idr }}</strong>
+        <small>Akumulasi transaksi demo yang sudah ditandai berhasil di sistem.</small>
+    </article>
+</section>
+
+{% if finance_summary.demo_transactions %}
+<section class="backoffice-note-box" style="margin-bottom: 24px;">
+    <strong>Mode demo akademik terdeteksi</strong>
+    <p>Transaksi dengan provider <strong>Demo QRIS Akademik</strong> adalah simulasi pembayaran untuk presentasi guru atau QA internal. Riwayatnya tetap tersimpan di ledger agar owner dan finance bisa menunjukkan alur kerja end-to-end tanpa dana asli.</p>
+</section>
+{% endif %}
+
+<section class="backoffice-command-grid compact">
+    <article class="backoffice-command-card">
+        <div class="backoffice-card-topline">
+            <span class="section-tag">Verification Flow</span>
+            <span class="bo-badge info">Finance SOP</span>
+        </div>
+        <h3>Urutan verifikasi yang aman untuk transfer manual</h3>
+        <div class="backoffice-guidance-list">
+            <article>
+                <strong>Cocokkan nominal</strong>
+                <p>Pastikan jumlah dibayar sama dengan total tagihan setelah diskon yang berlaku pada pesanan.</p>
+            </article>
+            <article>
+                <strong>Cek referensi pembayaran</strong>
+                <p>Gunakan nomor referensi, metode, dan waktu transfer untuk meminimalkan salah cocok antar transaksi.</p>
+            </article>
+            <article>
+                <strong>Simpan jejak audit</strong>
+                <p>Semua verifikasi sebaiknya dilakukan dari workspace pesanan agar riwayat status dan nama petugas tetap tercatat.</p>
+            </article>
+        </div>
+    </article>
+
+    <article class="backoffice-command-card">
+        <div class="backoffice-card-topline">
+            <span class="section-tag">Destination Accounts</span>
+            <span class="bo-badge dark">{{ payment_destination_groups|length }} grup</span>
+        </div>
+        <h3>Tujuan pembayaran bisa diganti tanpa mengubah alur user.</h3>
+        <p>Semua channel transfer aktif di halaman customer tetap ditarik dari file konfigurasi pembayaran, jadi tim hanya perlu memperbarui arah rekening, e-wallet, atau QRIS yang dipakai perusahaan.</p>
+        <div class="backoffice-note-box embedded">
+            <strong>Riwayat tetap terpisah dari pengaturan</strong>
+            <p>Config pembayaran mengatur arah dana, sedangkan tabel pembayaran menyimpan histori transaksi customer untuk kebutuhan maintenance dan laporan.</p>
+        </div>
+    </article>
+</section>
+
+<section class="backoffice-filter-strip">
+    <form method="GET" class="backoffice-filter-form">
+        <div class="form-group">
+            <label>Cari Pembayaran</label>
+            <input type="text" name="q" value="{{ current_search_query }}" placeholder="Kode pesanan, nama customer, email, referensi...">
+        </div>
+        <div class="form-group">
+            <label>Status</label>
+            <select name="status">
+                <option value="">Semua status</option>
+                {% for status_value in payment_status_options %}
+                <option value="{{ status_value }}" {% if current_status_filter == status_value %}selected{% endif %}>{{ status_value|replace('_', ' ')|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Metode</label>
+            <select name="method">
+                <option value="">Semua metode</option>
+                {% for method_key, method in payment_methods.items() %}
+                <option value="{{ method_key }}" {% if current_method_filter == method_key %}selected{% endif %}>{{ method.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="backoffice-filter-actions">
+            <button type="submit" class="btn-primary">Terapkan</button>
+            <a href="{{ url_for('backoffice_finance') }}" class="btn-outline-dark">Reset</a>
+        </div>
+    </form>
+</section>
+
+<section class="backoffice-detail-grid">
+    <div class="backoffice-panel span-two">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">Finance Settings</span>
+                <h2>Tujuan Dana Perusahaan Saat Ini</h2>
+            </div>
+        </div>
+        <p class="backoffice-muted-copy">{{ payment_config.page_copy.finance_report_note }}</p>
+
+        <div class="backoffice-order-grid compact payment-setting-grid">
+            {% for group in payment_destination_groups %}
+            <article class="backoffice-order-card payment-setting-card">
+                <div class="backoffice-order-card-body">
+                    <div class="backoffice-card-topline">
+                        <span class="bo-badge dark">{{ group.label }}</span>
+                    </div>
+                    <div class="payment-setting-list">
+                        {% for item in group['items'] %}
+                        <div class="payment-setting-item">
+                            <strong>{{ item.bank or item.label or item.merchant_name }}</strong>
+                            <p>{{ item.account_name or item.merchant_name }}</p>
+                            <small>{{ item.account_number or item.image_url or 'Belum ada link QRIS' }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="backoffice-panel">
+    <div class="backoffice-panel-head">
+        <div>
+            <span class="section-tag">Payment Ledger</span>
+            <h2>Riwayat Pembayaran Customer</h2>
+        </div>
+    </div>
+
+    <div class="backoffice-table-wrap">
+        <table class="backoffice-table finance-table">
+            <thead>
+                <tr>
+                    <th>Pesanan</th>
+                    <th>Customer</th>
+                    <th>Destinasi</th>
+                    <th>Metode</th>
+                    <th>Status</th>
+                    <th>Nominal</th>
+                    <th>Ref</th>
+                    <th>Diverifikasi</th>
+                    <th>Workspace</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in finance_rows %}
+                <tr>
+                    <td>
+                        <strong>{{ row.kode_pemesanan or ('ELT-' ~ '%06d'|format(row.pemesanan_id)) }}</strong>
+                        <small>{{ row.nama_paket }}</small>
+                    </td>
+                    <td>
+                        <strong>{{ row.nama_pemesan }}</strong>
+                        <small>{{ row.email }}</small>
+                    </td>
+                    <td>
+                        <strong>{{ row.wisata_nama }}</strong>
+                        <small>{{ row.country_label }}</small>
+                    </td>
+                    <td>
+                        <strong>{{ row.payment_label }}</strong>
+                        <small>{{ row.gateway_provider_label }}</small>
+                        {% if row.is_demo_payment %}
+                        <small>Simulasi akademik</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="bo-badge {{ 'success' if row.status_pembayaran == 'berhasil' else ('warning' if row.status_pembayaran == 'menunggu_verifikasi' else 'muted') }}">
+                            {{ row.status_pembayaran|replace('_', ' ')|title }}
+                        </span>
+                    </td>
+                    <td>
+                        <strong>{{ row.jumlah_dibayar|idr }}</strong>
+                        {% if row.total_diskon %}
+                        <small>Diskon {{ row.total_diskon|idr }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>{{ row.payment_reference or '-' }}</strong>
+                        <small>{{ row.tanggal_pembayaran.strftime('%d %b %Y %H:%M') if row.tanggal_pembayaran else '-' }}</small>
+                        {% if row.is_demo_payment %}
+                        <small>Referensi simulasi presentasi</small>
+                        {% endif %}
+                        {% if row.detail_map and row.detail_map.bukti_pembayaran %}
+                        <a href="{{ url_for('static', filename='uploads/evidence/' ~ row.detail_map.bukti_pembayaran) }}" target="_blank" style="display:inline-block; margin-top:4px; font-size:0.8rem; color:var(--gold);">
+                            <i class="fas fa-image"></i> Lihat Bukti
+                        </a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>{{ row.verified_by_name or 'Belum ada' }}</strong>
+                        <small>{{ row.verified_at.strftime('%d %b %Y %H:%M') if row.verified_at else '-' }}</small>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('backoffice_order_detail', pemesanan_id=row.pemesanan_id) }}" class="backoffice-link-inline">Buka Detail</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="backoffice-empty-inline">Belum ada transaksi yang cocok dengan filter ini.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+    <p class="backoffice-muted-copy">Tip finance: gunakan export CSV saat ingin merekap transaksi ke spreadsheet atau membuat laporan kas harian perusahaan.</p>
+</section>
+{% endblock %}

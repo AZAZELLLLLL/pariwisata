@@ -1,0 +1,492 @@
+{% extends 'base.html' %}
+{% block title %}Konfirmasi Pembayaran - EL Travel{% endblock %}
+{% block content %}
+
+<section class="page-hero small">
+    <div class="page-hero-bg">
+        <img src="{{ pemesanan.foto }}" alt="{{ pemesanan.wisata_nama }}">
+        <div class="page-hero-overlay"></div>
+    </div>
+    <div class="page-hero-content">
+        <h1>Status <span class="accent">Pembayaran</span></h1>
+        <p>Lihat ringkasan transaksi, nomor pembayaran, dan langkah berikutnya untuk pesanan ini.</p>
+    </div>
+</section>
+
+<section class="section-padding payment-confirm-section">
+    <div class="container">
+        <div class="payment-confirm-grid">
+            <div class="payment-confirm-main">
+                <div class="payment-confirm-card payment-confirm-hero-card">
+                    <span class="section-tag">Status Saat Ini</span>
+                    <h2>
+                        {% if pembayaran and pembayaran.status_pembayaran == 'berhasil' %}
+                            {% if pembayaran.gateway_provider == 'demo_qris' %}
+                        Simulasi pembayaran berhasil dicatat
+                            {% else %}
+                        Pembayaran berhasil diterima
+                            {% endif %}
+                        {% elif pembayaran and pembayaran.status_pembayaran == 'menunggu_verifikasi' %}
+                        Menunggu verifikasi admin
+                        {% elif pembayaran and pembayaran.status_pembayaran == 'pending' %}
+                            {% if pembayaran.gateway_provider == 'demo_qris' %}
+                        QRIS demo siap dipresentasikan
+                            {% else %}
+                        Pembayaran masih menunggu diselesaikan
+                            {% endif %}
+                        {% elif pembayaran and pembayaran.status_pembayaran == 'gagal' %}
+                        Pembayaran belum berhasil
+                        {% else %}
+                        Pesanan belum dibayar
+                        {% endif %}
+                    </h2>
+                    <p>
+                        {% if pembayaran and pembayaran.status_pembayaran == 'berhasil' %}
+                            {% if pembayaran.gateway_provider == 'demo_qris' %}
+                        Flow demo sudah lengkap sampai status lunas. Admin sekarang bisa melihat transaksi ini sebagai contoh pembayaran sukses.
+                            {% else %}
+                        Dana sudah tercatat masuk. Pesanan akan lanjut ke koordinasi keberangkatan.
+                            {% endif %}
+                        {% elif pembayaran and pembayaran.status_pembayaran == 'menunggu_verifikasi' %}
+                        User sudah mengirim konfirmasi manual. Admin tinggal memeriksa mutasi atau QRIS perusahaan.
+                        {% elif pembayaran and pembayaran.status_pembayaran == 'pending' %}
+                            {% if pembayaran.gateway_provider == 'demo_qris' %}
+                        QRIS simulasi sudah dibuat. Tunjukkan kode di bawah ke guru, lalu lanjutkan dengan tombol simulasi sukses untuk memperlihatkan perubahan status otomatis.
+                            {% else %}
+                        Transaksi sudah dibuat. User masih bisa melanjutkan pembayaran dari link atau popup aman.
+                            {% endif %}
+                        {% else %}
+                        Silakan kembali ke halaman pembayaran untuk membuat atau melanjutkan transaksi.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="payment-confirm-card">
+                    <span class="section-tag">Ringkasan Pesanan</span>
+                    <h3>{{ pemesanan.wisata_nama }} - {{ pemesanan.nama_paket }}</h3>
+                    <div class="confirm-detail-grid">
+                        <div>
+                            <span>Nomor pesanan</span>
+                            <strong>PES-{{ "%06d" % pemesanan.id }}</strong>
+                        </div>
+                        <div>
+                            <span>Nama pemesan</span>
+                            <strong>{{ pemesanan.nama_pemesan }}</strong>
+                        </div>
+                        <div>
+                            <span>Email</span>
+                            <strong>{{ pemesanan.email }}</strong>
+                        </div>
+                        <div>
+                            <span>Telepon</span>
+                            <strong>{{ pemesanan.telepon }}</strong>
+                        </div>
+                        <div>
+                            <span>Tanggal pergi</span>
+                            <strong>{{ pemesanan.tanggal_pergi }}</strong>
+                        </div>
+                        <div>
+                            <span>Total pembayaran</span>
+                            <strong>{{ (pembayaran.jumlah_dibayar if pembayaran and pembayaran.jumlah_dibayar else pemesanan.total_harga)|idr }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                {% if pembayaran %}
+                <div class="payment-confirm-card">
+                    <span class="section-tag">Instruksi Pembayaran</span>
+                    <h3>{{ payment_detail_map.payment_label or 'Detail metode pembayaran' }}</h3>
+
+                    {% if pembayaran.gateway_provider == 'demo_qris' %}
+                    <p class="confirm-copy">Mode ini dipakai untuk pengujian akademik. QR di bawah adalah simulasi visual agar alur checkout, konfirmasi, dan dashboard admin bisa diuji tanpa dana asli.</p>
+
+                    <div class="demo-qris-showcase">
+                        <div class="demo-qris-media">
+                            <img src="{{ payment_detail_map.demo_qr_image }}" alt="QRIS Demo {{ payment_detail_map.demo_reference }}">
+                        </div>
+                        <div class="instruction-stack">
+                            <div class="instruction-item">
+                                <span>Referensi demo</span>
+                                <strong>{{ payment_detail_map.demo_reference }}</strong>
+                            </div>
+                            <div class="instruction-item">
+                                <span>Berlaku sampai</span>
+                                <strong>{{ payment_detail_map.demo_expires_label or '30 menit dari pembuatan' }}</strong>
+                            </div>
+                            <div class="instruction-item">
+                                <span>Mode presentasi</span>
+                                <strong>{{ payment_demo.label }}</strong>
+                            </div>
+                            <div class="instruction-item">
+                                <span>Catatan</span>
+                                <strong>{{ payment_demo.confirm_note }}</strong>
+                            </div>
+                            {% if pembayaran.status_pembayaran == 'berhasil' %}
+                            <div class="instruction-item">
+                                <span>Waktu sukses</span>
+                                <strong>{{ payment_detail_map.demo_paid_label or pembayaran.tanggal_pembayaran }}</strong>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if pembayaran.status_pembayaran == 'pending' %}
+                    <div class="payment-action-row">
+                        <form method="POST" class="demo-complete-form">
+                            <input type="hidden" name="action" value="simulate_demo_success">
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-check-circle"></i> Simulasikan Pembayaran Sukses
+                            </button>
+                        </form>
+                        <a href="{{ url_for('pembayaran', pemesanan_id=pemesanan.id) }}" class="btn-outline">
+                            <i class="fas fa-repeat"></i> Ganti Metode Pembayaran
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="payment-evidence-box demo-success-box">
+                        <h3>Simulasi Sudah Selesai</h3>
+                        <p>Transaksi ini sudah ditandai lunas untuk kebutuhan presentasi. Riwayat pembayaran dan detail order admin akan ikut terbaca sebagai pembayaran sukses.</p>
+                    </div>
+                    {% endif %}
+
+                    {% elif pembayaran.gateway_provider == 'midtrans' and pembayaran.status_pembayaran == 'pending' %}
+                    <p class="confirm-copy">User masih bisa menyelesaikan pembayaran dari Virtual Account atau QRIS yang dihasilkan Midtrans.</p>
+
+                    {% set va_numbers = [] %}
+                    {% if payment_detail_map.va_bni %}{% set _ = va_numbers.append(('BNI VA', payment_detail_map.va_bni)) %}{% endif %}
+                    {% if payment_detail_map.va_bri %}{% set _ = va_numbers.append(('BRI VA', payment_detail_map.va_bri)) %}{% endif %}
+                    {% if payment_detail_map.va_permata %}{% set _ = va_numbers.append(('Permata VA', payment_detail_map.va_permata)) %}{% endif %}
+                    {% if payment_detail_map.bill_key %}{% set _ = va_numbers.append(('Mandiri Bill Key', payment_detail_map.bill_key)) %}{% endif %}
+                    {% if payment_detail_map.biller_code %}{% set _ = va_numbers.append(('Mandiri Biller Code', payment_detail_map.biller_code)) %}{% endif %}
+
+                    {% if va_numbers %}
+                    <div class="instruction-stack">
+                        {% for label, value in va_numbers %}
+                        <div class="instruction-item">
+                            <span>{{ label }}</span>
+                            <strong>{{ value }}</strong>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if payment_detail_map.action_generate_qr_code %}
+                    <div class="payment-qr-action">
+                        <a href="{{ payment_detail_map.action_generate_qr_code }}" target="_blank" class="btn-primary">
+                            <i class="fas fa-qrcode"></i> Buka QRIS Dinamis
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% if pembayaran.redirect_url %}
+                    <div class="payment-action-row">
+                        <a href="{{ url_for('pembayaran', pemesanan_id=pemesanan.id, launch=1) }}" class="btn-primary">
+                            <i class="fas fa-wallet"></i> Lanjutkan Pembayaran
+                        </a>
+                        <a href="{{ pembayaran.redirect_url }}" target="_blank" class="btn-outline">
+                            <i class="fas fa-arrow-up-right-from-square"></i> Buka Redirect Midtrans
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% elif pembayaran.gateway_provider == 'manual' %}
+                    <p class="confirm-copy">User sudah diarahkan ke pembayaran manual. Admin bisa memeriksa referensi transaksi dan mutasi masuk ke rekening / QRIS perusahaan.</p>
+                    <div class="instruction-stack">
+                        <div class="instruction-item">
+                            <span>Metode manual</span>
+                            <strong>{{ payment_detail_map.payment_label or pembayaran.metode_pembayaran|replace('_', ' ')|title }}</strong>
+                        </div>
+                        {% if pembayaran.payment_reference %}
+                        <div class="instruction-item">
+                            <span>Nomor referensi</span>
+                            <strong>{{ pembayaran.payment_reference }}</strong>
+                        </div>
+                        {% endif %}
+                        {% if pembayaran.keterangan %}
+                        <div class="instruction-item">
+                            <span>Catatan user</span>
+                            <strong>{{ pembayaran.keterangan }}</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if payment_detail_map.bukti_pembayaran %}
+                    <div class="payment-evidence-box">
+                        <h3>Bukti Pembayaran Terkirim</h3>
+                        <p>Anda sudah mengirim bukti transfer. Admin kami akan segera memverifikasinya.</p>
+                        <a href="{{ url_for('static', filename='uploads/evidence/' ~ payment_detail_map.bukti_pembayaran) }}" target="_blank" class="btn-outline">
+                            <i class="fas fa-image"></i> Lihat Bukti Terupload
+                        </a>
+                    </div>
+                    {% elif pembayaran.status_pembayaran in ['pending', 'menunggu_verifikasi'] %}
+                    <div class="payment-evidence-box">
+                        <h3>Kirim Bukti Pembayaran</h3>
+                        <p>Silakan upload screenshot bukti transfer agar admin dapat segera memverifikasi.</p>
+                        <form method="POST" enctype="multipart/form-data" class="evidence-form">
+                            <input type="hidden" name="action" value="upload_evidence">
+                            <div class="file-upload-wrapper">
+                                <input type="file" name="bukti_pembayaran" id="bukti_pembayaran" accept="image/*" class="file-input-hidden">
+                                <label for="bukti_pembayaran" class="file-upload-label">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>Pilih atau drag file foto (Maks 2MB)</span>
+                                </label>
+                            </div>
+                            <button type="submit" class="btn-primary btn-block" style="margin-top: 12px;">
+                                <i class="fas fa-upload"></i> Kirim Bukti
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    {% if pembayaran.metode_pembayaran == 'qris' and manual_qris_image %}
+                    <div class="manual-qris-box confirm-qris-box">
+                        <img src="{{ manual_qris_image }}" alt="QRIS {{ payment_account.qris.merchant_name }}">
+                        <div>
+                            <strong>{{ payment_account.qris.merchant_name }}</strong>
+                            <p>{{ payment_account.qris.note }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% else %}
+                    <p class="confirm-copy">Belum ada instruksi pembayaran yang tersimpan untuk pesanan ini.</p>
+                    <a href="{{ url_for('pembayaran', pemesanan_id=pemesanan.id) }}" class="btn-primary">
+                        <i class="fas fa-credit-card"></i> Buka Halaman Pembayaran
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <aside class="payment-confirm-sidebar">
+                <div class="payment-confirm-card">
+                    <span class="section-tag">Status Transaksi</span>
+                    <div class="instruction-stack">
+                        <div class="instruction-item">
+                            <span>Status pembayaran</span>
+                            <strong>{{ pembayaran.status_pembayaran|replace('_', ' ')|title if pembayaran else 'Belum dibuat' }}</strong>
+                        </div>
+                        <div class="instruction-item">
+                            <span>Gateway / jalur</span>
+                            <strong>
+                                {% if pembayaran and pembayaran.gateway_provider == 'demo_qris' %}
+                                Demo QRIS Akademik
+                                {% elif pembayaran and pembayaran.gateway_provider %}
+                                {{ pembayaran.gateway_provider|title }}
+                                {% else %}
+                                Belum ada
+                                {% endif %}
+                            </strong>
+                        </div>
+                        {% if pembayaran and pembayaran.gateway_order_id %}
+                        <div class="instruction-item">
+                            <span>Order ID gateway</span>
+                            <strong>{{ pembayaran.gateway_order_id }}</strong>
+                        </div>
+                        {% endif %}
+                        {% if pembayaran and pembayaran.gateway_transaction_id %}
+                        <div class="instruction-item">
+                            <span>Transaction ID</span>
+                            <strong>{{ pembayaran.gateway_transaction_id }}</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="payment-confirm-card">
+                    <span class="section-tag">Langkah Berikutnya</span>
+                    <ul class="confirm-steps">
+                        {% if pembayaran and pembayaran.gateway_provider == 'demo_qris' %}
+                        <li>Tampilkan QRIS demo ini ke guru sebagai bukti alur checkout berhasil membuat kode pembayaran.</li>
+                        <li>Klik tombol simulasi sukses agar status pembayaran dan pesanan berubah otomatis.</li>
+                        <li>Buka dashboard admin untuk memperlihatkan riwayat transaksi, status order, dan jejak audit pembayaran.</li>
+                        <li>Jika ingin bandingkan, kembali ke pembayaran lalu pilih ShopeePay, DANA, atau GoPay manual sebagai fallback internal.</li>
+                        {% else %}
+                        <li>Pastikan nominal yang dibayar sama dengan total pesanan.</li>
+                        <li>Untuk pembayaran manual, admin cek referensi dan mutasi masuk.</li>
+                        <li>Kalau status masih <strong>pending</strong>, user bisa lanjutkan dari tombol pembayaran lagi.</li>
+                        <li>Setelah pembayaran sukses, status pesanan akan ikut bergerak ke tahap konfirmasi.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <div class="payment-confirm-card">
+                    <span class="section-tag">Aksi Cepat</span>
+                    <div class="payment-action-column">
+                        <a href="{{ url_for('status_pesanan') }}" class="btn-outline">
+                            <i class="fas fa-list"></i> Lihat Status Pesanan
+                        </a>
+                        <a href="{{ url_for('pembayaran', pemesanan_id=pemesanan.id) }}" class="btn-outline">
+                            <i class="fas fa-wallet"></i> Kembali ke Pembayaran
+                        </a>
+                        <a href="{{ whatsapp_link('Halo EL Travel, saya ingin menanyakan status pembayaran pesanan saya.') }}" target="_blank" class="btn-wa">
+                            <i class="fab fa-whatsapp"></i> Chat Admin
+                        </a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<style>
+.payment-confirm-grid {
+    display: grid;
+    grid-template-columns: 1.08fr 0.92fr;
+    gap: 28px;
+    align-items: start;
+}
+
+.payment-confirm-main,
+.payment-confirm-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.payment-confirm-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 18px 40px rgba(26,39,68,0.08);
+    border: 1px solid rgba(26,39,68,0.08);
+}
+
+.payment-confirm-card h2,
+.payment-confirm-card h3 {
+    color: var(--navy);
+    margin-bottom: 10px;
+}
+
+.demo-qris-showcase {
+    display: grid;
+    grid-template-columns: minmax(220px, 280px) 1fr;
+    gap: 22px;
+    align-items: start;
+    margin-top: 18px;
+}
+
+.demo-qris-media {
+    padding: 18px;
+    background: linear-gradient(180deg, rgba(255, 248, 228, 0.96) 0%, rgba(255, 255, 255, 1) 100%);
+    border-radius: 22px;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+}
+
+.demo-qris-media img {
+    width: 100%;
+    display: block;
+    border-radius: 18px;
+}
+
+.demo-complete-form {
+    display: inline-flex;
+}
+
+.demo-success-box {
+    margin-top: 18px;
+}
+
+.payment-confirm-hero-card p,
+.confirm-copy {
+    color: var(--text-light);
+    line-height: 1.75;
+}
+
+.confirm-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.confirm-detail-grid div,
+.instruction-item {
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: #f8fafc;
+    border: 1px solid rgba(26,39,68,0.08);
+}
+
+.confirm-detail-grid span,
+.instruction-item span {
+    display: block;
+    color: var(--text-light);
+    margin-bottom: 6px;
+}
+
+.confirm-detail-grid strong,
+.instruction-item strong {
+    color: var(--navy);
+}
+
+.instruction-stack {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.payment-action-row,
+.payment-action-column {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.payment-action-column {
+    flex-direction: column;
+}
+
+.payment-qr-action {
+    margin-top: 18px;
+}
+
+.confirm-steps {
+    margin: 16px 0 0;
+    padding-left: 20px;
+    color: var(--text-light);
+    line-height: 1.8;
+}
+
+.confirm-qris-box {
+    margin-top: 18px;
+}
+
+@media (max-width: 992px) {
+    .payment-confirm-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .demo-qris-showcase {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .confirm-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const fileInput = document.getElementById('bukti_pembayaran');
+    const fileLabel = document.querySelector('.file-upload-label span');
+    
+    if (fileInput && fileLabel) {
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                fileLabel.textContent = e.target.files[0].name;
+                fileLabel.style.color = 'var(--gold)';
+            } else {
+                fileLabel.textContent = 'Pilih atau drag file foto (Maks 2MB)';
+                fileLabel.style.color = 'var(--navy)';
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}

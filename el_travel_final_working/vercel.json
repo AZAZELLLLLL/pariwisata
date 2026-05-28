@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "python build_vercel_assets.py",
+  "functions": {
+    "app.py": {
+      "runtime": "python3.13",
+      "maxDuration": 60,
+      "excludeFiles": "{backup_*.sql,*.zip,cloudflared.exe,cloudflared_tunnel.log,flask_public_stdout.log,flask_public_stderr.log,__pycache__/**}"
+    }
+  }
+}

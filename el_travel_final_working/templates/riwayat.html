@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Status Pesanan - EL Travel{% endblock %}
+{% block content %}
+
+<section class="page-hero small">
+    <div class="page-hero-bg">
+        <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1600&q=80" alt="Status Pesanan">
+        <div class="page-hero-overlay"></div>
+    </div>
+    <div class="page-hero-content">
+        <h1>Status <span class="accent">Pesanan</span></h1>
+        <p>Pantau tiket, pembayaran, dan progres perjalanan Anda dari akun yang sedang login.</p>
+    </div>
+</section>
+
+<section class="section-padding status-page-section">
+    <div class="container">
+        <div class="status-header-strip">
+            <div>
+                <span class="section-tag">My Booking Status</span>
+                <h2 class="section-title">Semua pesanan untuk <span class="accent status-user-email">{{ current_user.email }}</span></h2>
+            </div>
+            <a href="{{ url_for('destinasi') }}" class="btn-outline-dark">
+                <i class="fas fa-compass"></i> Pesan Destinasi Baru
+            </a>
+        </div>
+
+        <div class="status-stats-grid">
+            <div class="status-stat-card">
+                <i class="fas fa-ticket-alt"></i>
+                <strong>{{ summary.total }}</strong>
+                <span>Total Pesanan</span>
+            </div>
+            <div class="status-stat-card warning">
+                <i class="fas fa-wallet"></i>
+                <strong>{{ summary.payment_pending }}</strong>
+                <span>Menunggu Pembayaran</span>
+            </div>
+            <div class="status-stat-card info">
+                <i class="fas fa-hourglass-half"></i>
+                <strong>{{ summary.verifying }}</strong>
+                <span>Menunggu Verifikasi</span>
+            </div>
+            <div class="status-stat-card success">
+                <i class="fas fa-circle-check"></i>
+                <strong>{{ summary.active + summary.completed }}</strong>
+                <span>Terkonfirmasi / Selesai</span>
+            </div>
+        </div>
+
+        {% if status_data %}
+        <div class="status-order-list">
+            {% for item in status_data %}
+            <article class="status-order-card">
+                <div class="status-order-top">
+                    <div class="status-order-main">
+                        <img src="{{ item.foto }}" alt="{{ item.wisata_nama }}"
+                             onerror="this.src='https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80'">
+                        <div>
+                            <span class="status-order-ref">Tiket #{{ "%06d" % item.id }}</span>
+                            <h3>{{ item.wisata_nama }}</h3>
+                            <p>{{ item.nama_paket }}</p>
+                        </div>
+                    </div>
+                    <span class="status-ticket-badge status-{{ item.status_info.badge_class }}">
+                        <i class="fas {{ item.status_info.icon }}"></i> {{ item.status_info.label }}
+                    </span>
+                </div>
+
+                <div class="status-order-grid">
+                    <div>
+                        <label>Tanggal Keberangkatan</label>
+                        <span>{{ item.tanggal_pergi.strftime('%d %b %Y') if item.tanggal_pergi else '-' }}</span>
+                    </div>
+                    <div>
+                        <label>Jumlah Peserta</label>
+                        <span>{{ item.jumlah_orang }} orang</span>
+                    </div>
+                    <div>
+                        <label>Total Tagihan</label>
+                        <span>{{ item.total_harga|idr }}</span>
+                    </div>
+                    <div>
+                        <label>Metode Pembayaran</label>
+                        <span>{{ item.metode_pembayaran|replace('_', ' ')|title if item.metode_pembayaran else 'Belum dipilih' }}</span>
+                    </div>
+                    <div>
+                        <label>Dipesan Pada</label>
+                        <span>{{ item.tanggal_pesan.strftime('%d %b %Y, %H:%M') if item.tanggal_pesan else '-' }}</span>
+                    </div>
+                    <div>
+                        <label>Update Pembayaran</label>
+                        <span>{{ item.tanggal_pembayaran.strftime('%d %b %Y, %H:%M') if item.tanggal_pembayaran else 'Belum ada pembayaran' }}</span>
+                    </div>
+                </div>
+
+                <div class="status-order-note">
+                    <i class="fas fa-circle-info"></i>
+                    <p>{{ item.status_info.description }}</p>
+                </div>
+
+                <div class="status-order-actions">
+                    {% if item.can_pay_now %}
+                    <a href="{{ url_for('pembayaran', pemesanan_id=item.id) }}" class="btn-primary">
+                        <i class="fas fa-credit-card"></i> Lanjutkan Pembayaran
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('konfirmasi_pembayaran', pemesanan_id=item.id) }}" class="btn-outline-dark">
+                        <i class="fas fa-file-invoice"></i> Lihat Konfirmasi
+                    </a>
+                    {% endif %}
+
+                    {% if item.can_review %}
+                    <a href="{{ url_for('review', pemesanan_id=item.id) }}" class="btn-outline-dark">
+                        <i class="fas fa-star"></i>
+                        {% if item.is_reviewed %}Edit Review{% else %}Tulis Review{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <a href="{{ whatsapp_link('Halo EL Travel, saya ingin menanyakan status pesanan #' ~ ('%06d' % item.id) ~ '.') }}"
+                       target="_blank" class="btn-outline-dark">
+                        <i class="fab fa-whatsapp"></i> Hubungi Tim
+                    </a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-ticket-alt"></i>
+            <h3>Belum Ada Pesanan di Akun Ini</h3>
+            <p>Setelah Anda login dan melakukan booking, status tiket akan muncul di halaman ini.</p>
+            <a href="{{ url_for('destinasi') }}" class="btn-primary">Mulai Pilih Destinasi</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

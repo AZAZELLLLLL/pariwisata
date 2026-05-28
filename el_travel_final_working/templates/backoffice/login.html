@@ -1,0 +1,36 @@
+{% extends 'backoffice/auth_base.html' %}
+{% block title %}Login Staff - Backoffice EL Travel{% endblock %}
+{% block auth_heading %}Masuk ke dashboard owner dan staff untuk memproses pesanan customer.{% endblock %}
+{% block auth_copy %}Akses ini dipisahkan dari akun customer supaya tim bisa fokus ke verifikasi pembayaran, tiket, voucher, dan follow up dokumen.{% endblock %}
+{% block auth_card %}
+<div class="backoffice-auth-card">
+    <div class="backoffice-auth-card-header">
+        <h2>Login Staff</h2>
+        <p>Gunakan akun owner atau staff yang sudah terdaftar di tabel <code>akun_staff</code>.</p>
+    </div>
+
+    <form method="POST" class="backoffice-auth-form">
+        <div class="form-group">
+            <label>Email Staff</label>
+            <input type="email" name="email" placeholder="staff@eltravel.id" required>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Masukkan password staff" required>
+        </div>
+        <div class="form-group">
+            <label>Verifikasi Manusia: {{ staff_captcha_question }} = ?</label>
+            <input type="text" name="staff_captcha_answer" inputmode="numeric" placeholder="Isi hasil penjumlahan" required>
+        </div>
+        <input type="text" name="office_login_website" class="hidden-field" tabindex="-1" autocomplete="off">
+        <button type="submit" class="btn-primary backoffice-submit-btn">
+            <i class="fas fa-lock"></i> Masuk ke Backoffice
+        </button>
+    </form>
+
+    <div class="backoffice-auth-footnote">
+        <p>Kalau ini pertama kali dipakai dan akun staff belum ada, buka halaman setup owner terlebih dahulu.</p>
+        <a href="{{ url_for('backoffice_setup_owner') }}">Buka setup owner</a>
+    </div>
+</div>
+{% endblock %}

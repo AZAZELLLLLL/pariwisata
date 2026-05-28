@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% block title %}Pesan Paket - EL Travel{% endblock %}
+{% block content %}
+
+<section class="page-hero small">
+    <div class="page-hero-bg">
+        <img src="https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1400" alt="Pesan">
+        <div class="page-hero-overlay"></div>
+    </div>
+    <div class="page-hero-content">
+        <h1>Form <span class="accent">Pemesanan</span></h1>
+        <p>Lengkapi data Anda untuk memulai petualangan</p>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container">
+        {% if paket %}
+        <div class="pesan-layout">
+            <!-- Form -->
+            <div class="pesan-form-wrap">
+                <div class="form-card">
+                    <h2><i class="fas fa-clipboard-list"></i> Isi Data Pemesanan</h2>
+                    {% if logged_user %}
+                    <div class="login-lock-note">
+                        <i class="fab fa-google"></i>
+                        <div>
+                            <strong>Anda login sebagai {{ logged_user.name }}</strong>
+                            <span>{{ logged_user.email }}. Pemesanan ini akan otomatis terhubung ke akun tersebut.</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('pesan', paket_id=paket.id) }}">
+                        <div class="form-group">
+                            <label>Nama Lengkap <span class="required">*</span></label>
+                            <div class="input-wrap">
+                                <i class="fas fa-user"></i>
+                                <input type="text" name="nama_pemesan" placeholder="Masukkan nama lengkap" required
+                                       value="{{ logged_user.name if logged_user else '' }}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email <span class="required">*</span></label>
+                                <div class="input-wrap">
+                                    <i class="fas fa-envelope"></i>
+                                    <input type="email" name="email" placeholder="contoh@email.com" required
+                                           value="{{ logged_user.email if logged_user else '' }}" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Nomor WhatsApp <span class="required">*</span></label>
+                                <div class="input-wrap">
+                                    <i class="fab fa-whatsapp"></i>
+                                    <input type="tel" name="telepon" placeholder="08xxxxxxxxxx" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Tanggal Keberangkatan <span class="required">*</span></label>
+                                <div class="input-wrap">
+                                    <i class="fas fa-calendar"></i>
+                                    <input type="date" name="tanggal_pergi" required 
+                                           min="{{ '' }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Jumlah Orang <span class="required">*</span></label>
+                                <div class="input-wrap">
+                                    <i class="fas fa-users"></i>
+                                    <input type="number" name="jumlah_orang" min="{{ paket.min_orang }}" 
+                                           max="{{ paket.max_orang }}" value="{{ paket.min_orang }}" required
+                                           id="jumlahOrang">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Catatan Tambahan</label>
+                            <div class="input-wrap">
+                                <i class="fas fa-comment"></i>
+                                <textarea name="catatan" placeholder="Kebutuhan khusus, permintaan tambahan, dll..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="total-preview">
+                            <div class="total-row">
+                                <span>Harga per orang:</span>
+                                <span>Rp {{ '{:,.0f}'.format(paket.harga).replace(',', '.') }}</span>
+                            </div>
+                            <div class="total-row">
+                                <span>Jumlah orang:</span>
+                                <span id="previewJumlah">{{ paket.min_orang }}</span>
+                            </div>
+                            <div class="total-row total-final">
+                                <span>Total Pembayaran:</span>
+                                <span id="previewTotal">Rp {{ '{:,.0f}'.format(paket.harga * paket.min_orang).replace(',', '.') }}</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane"></i> Kirim Pemesanan
+                        </button>
+                        <p class="form-note"><i class="fas fa-info-circle"></i> Tim kami akan menghubungi Anda dalam 1x24 jam untuk konfirmasi</p>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sidebar Paket -->
+            <div class="pesan-sidebar">
+                <div class="paket-summary">
+                    <img src="{{ paket.foto }}" alt="{{ paket.wisata_nama }}"
+                         onerror="this.src='https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600'">
+                    <div class="paket-summary-info">
+                        <span class="ps-label">Paket Terpilih</span>
+                        <h3>{{ paket.nama_paket }}</h3>
+                        <p class="ps-dest"><i class="fas fa-map-marker-alt"></i> {{ paket.wisata_nama }} — {{ paket.lokasi }}</p>
+                        <p class="ps-durasi"><i class="fas fa-clock"></i> {{ paket.durasi }}</p>
+                        <div class="ps-harga">Rp {{ '{:,.0f}'.format(paket.harga).replace(',', '.') }} <small>/orang</small></div>
+                    </div>
+                    {% if paket.fasilitas %}
+                    <div class="ps-fasilitas">
+                        <h4>Fasilitas:</h4>
+                        <ul>
+                            {% for f in (paket.fasilitas or '').split(',') %}
+                            <li><i class="fas fa-check"></i> {{ f.strip() }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    <a href="{{ url_for('detail_wisata', id=paket.wisata_id) }}" class="btn-back">
+                        <i class="fas fa-arrow-left"></i> Kembali ke Detail
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Paket Tidak Ditemukan</h3>
+            <a href="{{ url_for('destinasi') }}" class="btn-primary">Lihat Destinasi</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+const harga = {{ paket.harga if paket else 0 }};
+const input = document.getElementById('jumlahOrang');
+const total = document.getElementById('previewTotal');
+const jml = document.getElementById('previewJumlah');
+if(input) {
+    input.addEventListener('input', function() {
+        const n = parseInt(this.value) || 1;
+        const t = harga * n;
+        jml.textContent = n;
+        total.textContent = 'Rp ' + t.toLocaleString('id-ID');
+    });
+}
+// Set min date to today
+const dateInput = document.querySelector('input[type="date"]');
+if(dateInput) {
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.min = today;
+}
+</script>
+{% endblock %}

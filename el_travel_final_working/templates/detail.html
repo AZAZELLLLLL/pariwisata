@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% block title %}{{ wisata.nama if wisata else 'Detail Wisata' }} - EL Travel{% endblock %}
+{% block content %}
+
+{% if wisata %}
+<section class="detail-hero detail-hero-story">
+    <div class="detail-hero-bg">
+        <img src="{{ wisata.foto }}" alt="{{ wisata.nama }}"
+             onerror="this.src='https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600&q=80'">
+        <div class="detail-hero-overlay"></div>
+    </div>
+    <div class="detail-hero-content container">
+        <div class="breadcrumb light">
+            <a href="{{ url_for('index') }}">Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="{{ url_for('destinasi') }}">Destinasi</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>{{ wisata.nama }}</span>
+        </div>
+        <span class="detail-kategori">{{ wisata.kategori or 'Wisata' }}</span>
+        <h1>{{ wisata.nama }}</h1>
+        <div class="detail-meta">
+            <span><i class="fas fa-map-marker-alt"></i> {{ wisata.lokasi }}</span>
+            <span><i class="fas fa-star"></i> {{ wisata.rating or '4.8' }} / 5.0</span>
+            <span><i class="fas fa-earth-asia"></i> {{ 'Indonesia' if wisata.tipe == 'lokal' else 'Internasional' }}</span>
+        </div>
+        <div class="detail-actions-hero">
+            <a href="#paket-tersedia" class="btn-primary">
+                <i class="fas fa-suitcase-rolling"></i> Lihat Paket Tersedia
+            </a>
+            {% if wisata.maps_url %}
+            <a href="{{ wisata.maps_url }}" target="_blank" class="btn-maps">
+                <i class="fas fa-map-marked-alt"></i> Lihat di Maps
+            </a>
+            {% endif %}
+            <a href="{{ whatsapp_link('Halo EL Travel, saya tertarik dengan destinasi ' ~ wisata.nama ~ '.') }}"
+               target="_blank" class="btn-wa">
+                <i class="fab fa-whatsapp"></i> Tanya Kami
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding detail-story-section">
+    <div class="container">
+        <div class="detail-layout detail-layout-story">
+            <div class="detail-main">
+                <div class="detail-card detail-story-card">
+                    <span class="section-tag">Destination Story</span>
+                    <h2>{{ story.headline if story else ('Kenapa ' ~ wisata.nama ~ ' layak dijelajahi lebih dalam') }}</h2>
+                    {% if story %}
+                        {% for paragraph in story.paragraphs %}
+                        <p class="detail-story-paragraph">{{ paragraph }}</p>
+                        {% endfor %}
+                    {% else %}
+                    <p class="detail-story-paragraph">{{ wisata.deskripsi or 'Deskripsi destinasi belum tersedia.' }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="detail-moment-panel">
+                    <div class="detail-moment-image">
+                        <img src="{{ story.moment_image if story else wisata.foto }}" alt="Momen terbaik {{ wisata.nama }}">
+                    </div>
+                    <div class="detail-moment-copy">
+                        <span class="section-tag">Momen Terbaik</span>
+                        <h2>{{ story.moment_title if story else ('Momen terbaik di ' ~ wisata.nama) }}</h2>
+                        <p>{{ story.moment_copy if story else wisata.deskripsi }}</p>
+                        <div class="detail-moment-meta">
+                            <div>
+                                <label>Waktu terbaik</label>
+                                <span>{{ story.best_time if story else 'Pagi atau sore hari saat cuaca paling cerah' }}</span>
+                            </div>
+                            <div>
+                                <label>Kenapa menarik</label>
+                                <span>Perubahan cahaya, suasana, dan ritme lokasi membuat pengalaman di {{ wisata.nama }} terasa jauh lebih hidup.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-highlights-grid">
+                    {% if story %}
+                        {% for item in story.highlights %}
+                        <article class="detail-highlight-card">
+                            <h3>{{ item.title }}</h3>
+                            <p>{{ item.text }}</p>
+                        </article>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="detail-card detail-package-bridge">
+                    <div>
+                        <span class="section-tag">Next Step</span>
+                        <h2>Kalau {{ wisata.nama }} terasa cocok, baru lanjutkan ke pilihan paket yang tersedia.</h2>
+                        <p>Bagian paket kami letakkan di bawah agar user sempat memahami destinasi ini dulu sebelum memilih bentuk perjalanan yang paling pas.</p>
+                    </div>
+                    <a href="#paket-tersedia" class="btn-primary">
+                        <i class="fas fa-arrow-down"></i> Buka Paket Tersedia
+                    </a>
+                </div>
+
+                <div class="detail-card detail-package-section" id="paket-tersedia">
+                    <span class="section-tag">Travel Packages</span>
+                    <h2>Paket untuk {{ wisata.nama }}</h2>
+                    <p class="detail-package-intro">Pilih paket yang ritmenya paling sesuai dengan gaya perjalanan Anda. Jika belum ada paket yang tampil, tim kami tetap bisa bantu siapkan rekomendasi khusus.</p>
+
+                    {% if paket %}
+                    <div class="paket-grid">
+                        {% for p in paket %}
+                        <div class="paket-card">
+                            <div class="paket-header">
+                                <h3>{{ p.nama_paket }}</h3>
+                                <span class="paket-durasi"><i class="fas fa-clock"></i> {{ p.durasi }}</span>
+                            </div>
+                            <div class="paket-harga">
+                                <span class="harga-label">Mulai dari</span>
+                                <span class="harga-num">Rp {{ '{:,.0f}'.format(p.harga).replace(',', '.') }}</span>
+                                <span class="harga-per">/ orang</span>
+                            </div>
+                            <p class="paket-desc">{{ p.deskripsi or '' }}</p>
+                            {% if p.fasilitas %}
+                            <div class="paket-fasilitas">
+                                <h4><i class="fas fa-check-circle"></i> Fasilitas Termasuk:</h4>
+                                <ul>
+                                    {% for f in (p.fasilitas or '').split(',') %}
+                                    <li><i class="fas fa-check"></i> {{ f.strip() }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            <div class="paket-info-row">
+                                <span><i class="fas fa-users"></i> {{ p.min_orang }}-{{ p.max_orang }} orang</span>
+                            </div>
+                            <a href="{{ url_for('pesan', paket_id=p.id) }}" class="btn-pesan">
+                                <i class="fas fa-shopping-cart"></i> Pesan Sekarang
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-paket">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Paket wisata untuk destinasi ini sedang dalam proses pembaruan. Kalau Anda sudah tertarik, tim kami bisa bantu kirimkan penawaran dan skenario perjalanan yang paling cocok.</p>
+                        <a href="{{ whatsapp_link('Halo EL Travel, saya ingin info paket untuk ' ~ wisata.nama ~ '.') }}" target="_blank" class="btn-wa">
+                            <i class="fab fa-whatsapp"></i> Tanyakan Paket
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <aside class="detail-sidebar">
+                <div class="sidebar-card highlight">
+                    <h3>Informasi Destinasi</h3>
+                    <div class="info-list">
+                        <div class="info-row">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <label>Lokasi</label>
+                                <span>{{ wisata.lokasi }}</span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-tag"></i>
+                            <div>
+                                <label>Kategori</label>
+                                <span>{{ wisata.kategori or 'Wisata Umum' }}</span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-star"></i>
+                            <div>
+                                <label>Rating</label>
+                                <span>{{ wisata.rating or '4.8' }} / 5.0</span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-sun"></i>
+                            <div>
+                                <label>Momen terbaik</label>
+                                <span>{{ story.best_time if story else 'Pagi atau sore hari' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% if wisata.maps_url %}
+                    <a href="{{ wisata.maps_url }}" target="_blank" class="btn-maps full-width">
+                        <i class="fas fa-map-marked-alt"></i> Buka Google Maps
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Butuh Bantuan Menentukan Paket?</h3>
+                    <p>Kalau Anda masih ingin menimbang waktu terbaik, budget, atau format trip yang paling pas, tim EL Travel bisa bantu arahkan sebelum Anda checkout.</p>
+                    <a href="{{ whatsapp_link('Halo EL Travel, saya ingin diskusi tentang destinasi ' ~ wisata.nama ~ '.') }}"
+                       target="_blank" class="btn-wa full-width">
+                        <i class="fab fa-whatsapp"></i> Diskusi via WhatsApp
+                    </a>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+{% else %}
+<section class="section-padding">
+    <div class="container">
+        <div class="empty-state">
+            <i class="fas fa-map"></i>
+            <h3>Destinasi Tidak Ditemukan</h3>
+            <p>Destinasi yang Anda cari tidak tersedia.</p>
+            <a href="{{ url_for('destinasi') }}" class="btn-primary">Lihat Semua Destinasi</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}

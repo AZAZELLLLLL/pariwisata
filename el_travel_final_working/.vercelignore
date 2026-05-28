@@ -1,0 +1,11 @@
+.env
+__pycache__
+*.pyc
+*.log
+*.zip
+backup_*.sql
+cloudflared.exe
+build_vercel_assets.pyc
+flask_public_stdout.log
+flask_public_stderr.log
+cloudflared_tunnel.log

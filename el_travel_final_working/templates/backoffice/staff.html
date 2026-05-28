@@ -1,0 +1,203 @@
+{% extends 'backoffice/base.html' %}
+{% block title %}Tim & Akses - Backoffice EL Travel{% endblock %}
+{% block backoffice_title %}Tim Internal dan Hak Akses{% endblock %}
+{% block backoffice_subtitle %}Kelola akun pegawai yang boleh membuka backoffice, atur peran mereka, dan jaga agar hanya staff resmi yang bisa memproses data perusahaan.{% endblock %}
+{% block backoffice_header_actions %}
+<div class="backoffice-header-actions">
+    <a href="{{ url_for('backoffice_dashboard') }}" class="btn-outline-dark">
+        <i class="fas fa-chart-line"></i> Kembali ke Overview
+    </a>
+</div>
+{% endblock %}
+{% block backoffice_content %}
+{% set staff_stats = namespace(active=0, owner=0, finance=0, operational=0) %}
+{% for staff in staff_rows %}
+    {% if staff.is_active %}{% set staff_stats.active = staff_stats.active + 1 %}{% endif %}
+    {% if staff.role == 'owner' %}{% set staff_stats.owner = staff_stats.owner + 1 %}{% endif %}
+    {% if staff.role == 'finance' %}{% set staff_stats.finance = staff_stats.finance + 1 %}{% endif %}
+    {% if staff.role == 'operational' %}{% set staff_stats.operational = staff_stats.operational + 1 %}{% endif %}
+{% endfor %}
+
+<section class="backoffice-summary-strip three-up">
+    <article class="backoffice-summary-card">
+        <span>Total Akun</span>
+        <strong>{{ staff_rows|length }}</strong>
+        <small>Owner dan seluruh staff yang tersimpan.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Akses Aktif</span>
+        <strong>{{ staff_stats.active }}</strong>
+        <small>Masih bisa login ke dashboard internal.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Owner</span>
+        <strong>{{ staff_stats.owner }}</strong>
+        <small>Akun dengan akses paling lengkap.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Finance + Operasional</span>
+        <strong>{{ staff_stats.finance + staff_stats.operational }}</strong>
+        <small>Tim eksekusi harian untuk pembayaran dan pesanan.</small>
+    </article>
+</section>
+
+<section class="backoffice-detail-grid">
+    <div class="backoffice-panel span-two">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">Create Staff</span>
+                <h2>Tambah Akun Pegawai Baru</h2>
+            </div>
+        </div>
+        <div class="backoffice-note-box">
+            <strong>Prinsip akses</strong>
+            <p>Buat akun staff seperlunya, sesuaikan role dengan tanggung jawabnya, dan nonaktifkan akses lama daripada menghapus riwayat operasional yang sudah pernah tercatat.</p>
+        </div>
+
+        <form method="POST" class="backoffice-operational-form">
+            <input type="hidden" name="action" value="create_staff">
+
+            <div class="form-grid-two">
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" name="nama_lengkap" placeholder="Contoh: Admin Operasional">
+                </div>
+                <div class="form-group">
+                    <label>Email Staff</label>
+                    <input type="email" name="email" placeholder="admin@eltravel.id">
+                </div>
+            </div>
+
+            <div class="form-grid-four">
+                <div class="form-group">
+                    <label>Role</label>
+                    <select name="role">
+                        {% for role in staff_role_options %}
+                        <option value="{{ role.value }}">{{ role.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="is_active">
+                        <option value="1">Aktif</option>
+                        <option value="0">Nonaktif</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="Minimal 8 karakter">
+                </div>
+                <div class="form-group">
+                    <label>Ulangi Password</label>
+                    <input type="password" name="confirm_password" placeholder="Konfirmasi password">
+                </div>
+            </div>
+
+            <div class="backoffice-form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-user-plus"></i> Buat Akun Staff
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="backoffice-panel span-two">
+        <div class="backoffice-panel-head">
+            <div>
+                <span class="section-tag">Access Roster</span>
+                <h2>Daftar Akun Owner dan Pegawai</h2>
+            </div>
+        </div>
+
+        <div class="backoffice-package-list staff-admin-list">
+            {% for staff in staff_rows %}
+            <article class="backoffice-package-card staff-admin-card">
+                <div class="backoffice-card-topline">
+                    <div class="staff-identity">
+                        <span class="staff-avatar">{{ staff.nama_lengkap[:1] }}</span>
+                        <div>
+                            <strong>{{ staff.nama_lengkap }}</strong>
+                            <small>{{ staff.role_label }}</small>
+                        </div>
+                    </div>
+                    <span class="bo-badge {{ 'success' if staff.is_active else 'muted' }}">{{ 'Aktif' if staff.is_active else 'Nonaktif' }}</span>
+                </div>
+                <p>{{ staff.email }} - {{ staff.role_label }}</p>
+                <small class="promo-admin-meta">
+                    Login terakhir:
+                    {{ staff.last_login_at.strftime('%d %b %Y %H:%M') if staff.last_login_at else 'Belum pernah login' }}
+                </small>
+
+                <div class="backoffice-order-meta-list staff-meta-list">
+                    <div>
+                        <label>Pesanan Ditangani</label>
+                        <span>{{ staff.assigned_order_total }}</span>
+                    </div>
+                    <div>
+                        <label>Pembayaran Diverifikasi</label>
+                        <span>{{ staff.verified_payment_total }}</span>
+                    </div>
+                    <div>
+                        <label>Dibuat</label>
+                        <span>{{ staff.created_at.strftime('%d %b %Y') if staff.created_at else '-' }}</span>
+                    </div>
+                    <div>
+                        <label>Role</label>
+                        <span>{{ staff.role_label }}</span>
+                    </div>
+                </div>
+
+                <form method="POST" class="backoffice-operational-form compact-form">
+                    <input type="hidden" name="action" value="update_staff">
+                    <input type="hidden" name="staff_id" value="{{ staff.id }}">
+
+                    <div class="form-grid-two">
+                        <div class="form-group">
+                            <label>Nama Lengkap</label>
+                            <input type="text" name="nama_lengkap" value="{{ staff.nama_lengkap }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Staff</label>
+                            <input type="email" name="email" value="{{ staff.email }}">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-four">
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select name="role">
+                                {% for role in staff_role_options %}
+                                <option value="{{ role.value }}" {% if staff.role == role.value %}selected{% endif %}>{{ role.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select name="is_active">
+                                <option value="1" {% if staff.is_active %}selected{% endif %}>Aktif</option>
+                                <option value="0" {% if not staff.is_active %}selected{% endif %}>Nonaktif</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Password Baru</label>
+                            <input type="password" name="password" placeholder="Kosongkan jika tidak diubah">
+                        </div>
+                        <div class="form-group">
+                            <label>Konfirmasi Password</label>
+                            <input type="password" name="confirm_password" placeholder="Ulangi password baru">
+                        </div>
+                    </div>
+
+                    <div class="backoffice-form-actions split">
+                        <button type="submit" class="btn-primary">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </article>
+            {% else %}
+            <div class="backoffice-empty-inline">Belum ada akun staff selain owner awal.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

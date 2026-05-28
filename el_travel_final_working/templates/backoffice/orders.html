@@ -1,0 +1,147 @@
+{% extends 'backoffice/base.html' %}
+{% block title %}Kelola Pesanan - Backoffice EL Travel{% endblock %}
+{% block backoffice_title %}Kelola Pesanan Customer{% endblock %}
+{% block backoffice_subtitle %}Filter antrean berdasarkan status operasional, status pembayaran, atau cari cepat berdasarkan nama customer dan destinasi.{% endblock %}
+{% block backoffice_header_actions %}
+<div class="backoffice-header-actions">
+    <a href="{{ url_for('backoffice_dashboard') }}" class="btn-outline-dark">
+        <i class="fas fa-chart-line"></i> Overview
+    </a>
+    <a href="{{ url_for('backoffice_finance') }}" class="btn-primary">
+        <i class="fas fa-wallet"></i> Verifikasi Dana
+    </a>
+</div>
+{% endblock %}
+{% block backoffice_content %}
+<section class="backoffice-summary-strip three-up">
+    <article class="backoffice-summary-card">
+        <span>Semua Antrean</span>
+        <strong>{{ filter_counts.all }}</strong>
+        <small>Seluruh pesanan yang masih tersimpan di dashboard.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Perlu Dicek</span>
+        <strong>{{ filter_counts.payment_review }}</strong>
+        <small>Pembayaran menunggu review finance atau owner.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Siapkan Tiket</span>
+        <strong>{{ filter_counts.ready_ticket }}</strong>
+        <small>Pesanan yang bisa dinaikkan ke proses ticketing.</small>
+    </article>
+    <article class="backoffice-summary-card">
+        <span>Selesai</span>
+        <strong>{{ filter_counts.completed }}</strong>
+        <small>Pesanan yang status operasionalnya sudah tuntas.</small>
+    </article>
+</section>
+
+<section class="backoffice-filter-strip">
+    <div class="backoffice-filter-pills">
+        <span class="bo-stat-pill">Semua: {{ filter_counts.all }}</span>
+        <span class="bo-stat-pill info">Perlu Dicek: {{ filter_counts.payment_review }}</span>
+        <span class="bo-stat-pill primary">Siapkan Tiket: {{ filter_counts.ready_ticket }}</span>
+        <span class="bo-stat-pill success">Selesai: {{ filter_counts.completed }}</span>
+    </div>
+
+    <form method="GET" class="backoffice-filter-form">
+        <div class="form-group">
+            <label>Cari</label>
+            <input type="text" name="q" value="{{ current_search_query }}" placeholder="Kode booking, nama customer, destinasi...">
+        </div>
+        <div class="form-group">
+            <label>Status Operasional</label>
+            <select name="status">
+                <option value="">Semua status</option>
+                {% for status_key in operational_options %}
+                <option value="{{ status_key }}" {% if current_status_filter == status_key %}selected{% endif %}>
+                    {{ operational_meta[status_key].label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Status Pembayaran</label>
+            <select name="payment">
+                <option value="">Semua pembayaran</option>
+                {% for status_key in payment_options %}
+                <option value="{{ status_key }}" {% if current_payment_filter == status_key %}selected{% endif %}>
+                    {{ payment_meta[status_key].label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="backoffice-filter-actions">
+            <button type="submit" class="btn-primary">Terapkan</button>
+            <a href="{{ url_for('backoffice_orders') }}" class="btn-outline-dark">Reset</a>
+        </div>
+    </form>
+</section>
+
+<section class="backoffice-order-grid">
+    {% for item in order_rows %}
+    <article class="backoffice-order-card">
+        <div class="backoffice-order-card-head">
+            <div class="backoffice-order-customer">
+                <span class="backoffice-customer-avatar">{{ item.customer_initial }}</span>
+                <div>
+                    <strong>{{ item.nama_pemesan }}</strong>
+                    <small>{{ item.booking_code_display }} - {{ item.email }}</small>
+                </div>
+            </div>
+            <span class="bo-badge {{ item.operational_meta.tone }}">{{ item.operational_meta.label }}</span>
+        </div>
+
+        <div class="backoffice-order-media">
+            <img src="{{ item.foto }}" alt="{{ item.wisata_nama }}"
+                 onerror="this.src='https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=80'">
+        </div>
+
+        <div class="backoffice-order-card-body">
+            <div class="backoffice-card-topline order-card-topline">
+                <span class="bo-badge dark">{{ item.booking_code_display }}</span>
+                <span class="bo-badge {{ item.payment_meta.tone }}">{{ item.payment_meta.label }}</span>
+            </div>
+            <h3>{{ item.wisata_nama }}</h3>
+            <p>{{ item.nama_paket }} - {{ item.country_label }} - {{ item.traveler_summary }}</p>
+
+            <div class="backoffice-order-meta-list">
+                <div>
+                    <label>Keberangkatan</label>
+                    <span>{{ item.tanggal_pergi.strftime('%d %b %Y') if item.tanggal_pergi else '-' }}</span>
+                </div>
+                <div>
+                    <label>Total</label>
+                    <span>{{ item.total_harga|idr }}</span>
+                </div>
+                <div>
+                    <label>Pembayaran</label>
+                    <span class="bo-badge {{ item.payment_meta.tone }}">{{ item.payment_meta.label }}</span>
+                </div>
+                <div>
+                    <label>Petugas</label>
+                    <span>{{ item.assigned_staff_name or 'Belum di-assign' }}</span>
+                </div>
+            </div>
+
+            <div class="backoffice-order-foot">
+                <small><i class="fas fa-clock"></i> Masuk {{ item.tanggal_pesan.strftime('%d %b %Y %H:%M') if item.tanggal_pesan else '-' }}</small>
+                <small><i class="fas fa-user-check"></i> {{ item.assigned_staff_name or 'Menunggu penugasan' }}</small>
+            </div>
+        </div>
+
+        <div class="backoffice-order-card-actions">
+            <a href="{{ url_for('backoffice_order_detail', pemesanan_id=item.id) }}" class="btn-primary">
+                <i class="fas fa-arrow-right"></i> Buka Workspace
+            </a>
+        </div>
+    </article>
+    {% else %}
+    <div class="backoffice-empty-state">
+        <i class="fas fa-inbox"></i>
+        <h3>Belum ada pesanan untuk filter ini</h3>
+        <p>Coba longgarkan filter atau reset pencarian untuk melihat antrean penuh.</p>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}

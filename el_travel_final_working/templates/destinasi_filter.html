@@ -1,0 +1,475 @@
+{% extends 'base.html' %}
+{% block title %}Destinasi — EL Travel{% endblock %}
+{% block content %}
+
+<!-- HERO SECTION -->
+<section class="filter-hero">
+    <div class="filter-hero-bg">
+        <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1600" alt="Destinasi">
+        <div class="filter-hero-overlay"></div>
+    </div>
+    <div class="container filter-hero-content">
+        <h1 class="filter-title">
+            {% if tipe_filter == 'lokal' %}
+                Destinasi Indonesia
+            {% elif tipe_filter == 'internasional' %}
+                Destinasi Internasional
+            {% elif tipe_filter == 'petualangan' %}
+                Wisata Petualangan
+            {% elif tipe_filter == 'budaya' %}
+                Wisata Budaya
+            {% else %}
+                Semua Destinasi
+            {% endif %}
+        </h1>
+        <p class="filter-subtitle">Jelajahi destinasi pilihan sesuai dengan minat Anda</p>
+    </div>
+</section>
+
+<!-- FILTER TABS -->
+<section class="filter-tabs-section">
+    <div class="container">
+        <div class="filter-tabs">
+            <a href="{{ url_for('destinasi_filter', tipe='lokal') }}" 
+               class="filter-tab {% if tipe_filter == 'lokal' %} active {% endif %}">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Indonesia</span>
+            </a>
+            <a href="{{ url_for('destinasi_filter', tipe='internasional') }}" 
+               class="filter-tab {% if tipe_filter == 'internasional' %} active {% endif %}">
+                <i class="fas fa-globe"></i>
+                <span>Internasional</span>
+            </a>
+            <a href="{{ url_for('destinasi_filter', tipe='petualangan') }}" 
+               class="filter-tab {% if tipe_filter == 'petualangan' %} active {% endif %}">
+                <i class="fas fa-hiking"></i>
+                <span>Petualangan</span>
+            </a>
+            <a href="{{ url_for('destinasi_filter', tipe='budaya') }}" 
+               class="filter-tab {% if tipe_filter == 'budaya' %} active {% endif %}">
+                <i class="fas fa-landmark"></i>
+                <span>Budaya</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- DESTINASI GRID -->
+<section class="destinasi-grid-section">
+    <div class="container">
+        {% if wisata %}
+            <div class="destinasi-grid">
+                {% for item in wisata %}
+                <div class="destinasi-card">
+                    <div class="destinasi-image">
+                        <img src="{{ item.foto }}" alt="{{ item.nama }}" loading="lazy">
+                        <div class="destinasi-overlay">
+                            <a href="{{ url_for('detail_wisata', id=item.id) }}" class="btn-view">
+                                <i class="fas fa-eye"></i> Lihat Detail
+                            </a>
+                        </div>
+                        <div class="destinasi-badge">
+                            {% if item.tipe == 'lokal' or item.kategori in ['Bahari', 'Petualangan', 'Alam', 'Budaya'] %}
+                                🇮🇩 Lokal
+                            {% else %}
+                                🌍 Internasional
+                            {% endif %}
+                        </div>
+                        <div class="destinasi-rating">
+                            <i class="fas fa-star"></i> {{ item.rating }}
+                        </div>
+                    </div>
+                    <div class="destinasi-info">
+                        <h3>{{ item.nama }}</h3>
+                        <p class="destinasi-location">
+                            <i class="fas fa-map-marker-alt"></i> {{ item.lokasi }}
+                        </p>
+                        <p class="destinasi-desc">{{ (item.deskripsi or '')[:100] }}{{ '...' if item.deskripsi and item.deskripsi|length > 100 else '' }}</p>
+                        <div class="destinasi-footer">
+                            <span class="destinasi-category">{{ item.kategori }}</span>
+                            <a href="{{ url_for('detail_wisata', id=item.id) }}" class="btn-explore">
+                                Jelajahi <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h3>Belum Ada Destinasi</h3>
+                <p>Maaf, tidak ada destinasi yang sesuai dengan filter Anda. Silahkan coba filter lain.</p>
+                <a href="{{ url_for('index') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Beranda
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+/* FILTER PAGE STYLES */
+.filter-hero {
+    position: relative;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-top: 80px;
+}
+
+.filter-hero-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+}
+
+.filter-hero-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.filter-hero-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(26,39,68,0.7), rgba(36,51,96,0.7));
+}
+
+.filter-hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: white;
+}
+
+.filter-title {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    font-family: 'Playfair Display', serif;
+    animation: slideDown 0.6s ease;
+}
+
+.filter-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.9);
+    animation: slideDown 0.8s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* FILTER TABS */
+.filter-tabs-section {
+    padding: 40px 0;
+    background: white;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 80px;
+    z-index: 100;
+}
+
+.filter-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.filter-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: var(--off-white);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.filter-tab:hover {
+    background: rgba(200,168,75,0.1);
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.filter-tab.active {
+    background: linear-gradient(135deg, rgba(200,168,75,0.2), rgba(230,200,117,0.1));
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.filter-tab i {
+    font-size: 1.2rem;
+}
+
+/* DESTINASI GRID */
+.destinasi-grid-section {
+    padding: 80px 0;
+    background: var(--off-white);
+}
+
+.destinasi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.destinasi-card {
+    background: white;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+
+.destinasi-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+}
+
+.destinasi-image {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+}
+
+.destinasi-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition);
+}
+
+.destinasi-card:hover .destinasi-image img {
+    transform: scale(1.08);
+}
+
+.destinasi-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.destinasi-card:hover .destinasi-overlay {
+    opacity: 1;
+}
+
+.btn-view {
+    padding: 12px 24px;
+    background: var(--gold);
+    color: var(--navy);
+    border-radius: 10px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-view:hover {
+    background: var(--gold-light);
+    transform: scale(1.05);
+}
+
+.destinasi-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(26,39,68,0.9);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.destinasi-rating {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.destinasi-info {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.destinasi-info h3 {
+    color: var(--navy);
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+}
+
+.destinasi-location {
+    color: var(--gold);
+    font-size: 0.85rem;
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.destinasi-desc {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin: 0 0 12px 0;
+    flex: 1;
+}
+
+.destinasi-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.destinasi-category {
+    display: inline-block;
+    background: rgba(200,168,75,0.1);
+    color: var(--gold);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.btn-explore {
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+}
+
+.btn-explore:hover {
+    gap: 10px;
+}
+
+/* EMPTY STATE */
+.empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--gold);
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: var(--navy);
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: var(--text-light);
+    font-size: 1rem;
+    margin-bottom: 24px;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-back:hover {
+    transform: translateX(-4px);
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .destinasi-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 20px;
+    }
+    
+    .filter-title {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-hero {
+        height: 280px;
+    }
+    
+    .filter-title {
+        font-size: 1.8rem;
+    }
+    
+    .filter-tabs {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    
+    .filter-tab {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .destinasi-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-tabs {
+        grid-template-columns: 1fr;
+    }
+    
+    .destinasi-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+{% endblock %}

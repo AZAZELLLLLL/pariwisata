@@ -1,0 +1,804 @@
+{% extends 'base.html' %}
+{% block title %}Pembayaran - EL Travel{% endblock %}
+{% block content %}
+
+<section class="page-hero small">
+    <div class="page-hero-bg">
+        <img src="{{ pemesanan.foto }}" alt="{{ pemesanan.wisata_nama }}">
+        <div class="page-hero-overlay"></div>
+    </div>
+    <div class="page-hero-content">
+        <h1>Pembayaran <span class="accent">Pesanan</span></h1>
+        <p>{{ payment_config.page_copy.subtitle }}</p>
+    </div>
+</section>
+
+<section class="section-padding payment-shell-section">
+    <div class="container">
+        <div class="payment-shell">
+            <aside class="payment-sidebar">
+                <div class="payment-summary-card">
+                    <span class="section-tag">Ringkasan Pesanan</span>
+                    <h2>{{ pemesanan.wisata_nama }}</h2>
+                    <p class="payment-package-name">{{ pemesanan.nama_paket }}</p>
+
+                    {% if pemesanan.total_harga == 1 %}
+                    <div class="payment-test-note">
+                        <strong>Mode uji pembayaran Rp1 aktif</strong>
+                        <p>Paket ini memang disiapkan untuk memastikan transfer / QRIS / gateway bisa diuji lebih aman sebelum go-live.</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="payment-breakdown-list">
+                        <div>
+                            <span>Harga paket</span>
+                            <strong>{{ pemesanan.harga|idr }}</strong>
+                        </div>
+                        <div>
+                            <span>Jumlah peserta</span>
+                            <strong>{{ pemesanan.jumlah_orang }} orang</strong>
+                        </div>
+                        <div>
+                            <span>Tanggal pergi</span>
+                            <strong>{{ pemesanan.tanggal_pergi }}</strong>
+                        </div>
+                        <div class="is-total">
+                            <span>Total pembayaran</span>
+                            <strong>{{ pemesanan.total_harga|idr }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payment-summary-card">
+                    <span class="section-tag">Metode Saat Ini</span>
+                    {% if midtrans_enabled %}
+                    <p class="payment-channel-copy">{{ payment_config.page_copy.gateway_note }}</p>
+                    {% else %}
+                    <p class="payment-channel-copy">{{ payment_config.page_copy.manual_note }}</p>
+                    {% endif %}
+                    <p class="payment-channel-copy"><strong>Catatan pengelolaan:</strong> {{ payment_config.page_copy.account_config_note }}</p>
+
+                    {% if pembayaran %}
+                    <div class="payment-status-stack">
+                        <div>
+                            <span>Status</span>
+                            <strong>{{ pembayaran.status_pembayaran|replace('_', ' ')|title }}</strong>
+                        </div>
+                        <div>
+                            <span>Metode</span>
+                            <strong>{{ payment_methods[pembayaran.metode_pembayaran].label if pembayaran.metode_pembayaran in payment_methods else pembayaran.metode_pembayaran }}</strong>
+                        </div>
+                        {% if pembayaran.payment_reference %}
+                        <div>
+                            <span>Referensi</span>
+                            <strong>{{ pembayaran.payment_reference }}</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="payment-channel-copy">Belum ada transaksi yang dibuat untuk pesanan ini.</p>
+                    {% endif %}
+                </div>
+
+                {% if demo_qris_enabled %}
+                <div class="payment-summary-card payment-demo-card">
+                    <span class="section-tag">{{ payment_demo.hero_badge }}</span>
+                    <h3>{{ payment_demo.label }}</h3>
+                    <p class="payment-channel-copy">{{ payment_config.page_copy.demo_note }}</p>
+                    <div class="payment-status-stack">
+                        <div>
+                            <span>Metode utama demo</span>
+                            <strong>QRIS simulasi</strong>
+                        </div>
+                        <div>
+                            <span>Cadangan internal</span>
+                            <strong>ShopeePay / DANA / GoPay manual</strong>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </aside>
+
+            <div class="payment-main-panel">
+                <div class="payment-form-card">
+                    <div class="payment-card-head">
+                        <span class="section-tag">Pilih Metode</span>
+                        <h2>Transfer, E-Wallet, atau QRIS</h2>
+                        <p>Pilih metode yang ingin user pakai. Jika gateway aktif, pembayaran akan diarahkan ke jendela Midtrans Snap. Kalau belum, user bisa membayar manual ke rekening, e-wallet, atau QRIS perusahaan.</p>
+                        {% if demo_qris_enabled %}
+                        <div class="payment-demo-inline-note">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <div>
+                                <strong>Flow presentasi guru aktif</strong>
+                                <p>{{ payment_demo.checkout_note }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <form method="POST" id="paymentForm" class="payment-method-form">
+                        {% for method_key, method in payment_methods.items() %}
+                        <label class="payment-option-card">
+                            <input type="radio" name="metode_pembayaran" value="{{ method_key }}" {% if loop.first %}checked{% endif %}>
+                            <div class="payment-option-body">
+                                <div class="payment-option-icon">
+                                    <i class="fas {{ method.icon }}"></i>
+                                </div>
+                                <div>
+                                    <strong>{{ method.label }}</strong>
+                                    <p>{{ method.description }}</p>
+                                </div>
+                            </div>
+                        </label>
+                        {% endfor %}
+
+                        <div class="payment-method-detail active" data-method="bank_transfer">
+                            <h3>Transfer Bank</h3>
+                            {% if midtrans_enabled %}
+                            <p>Metode ini akan membuka pilihan Virtual Account otomatis melalui Midtrans. Untuk nominal uji Rp1, channel yang kami aktifkan aman untuk BNI, BRI, Permata, dan Mandiri Bill.</p>
+                            {% else %}
+                            <p>Gunakan salah satu rekening perusahaan di bawah ini, lalu isi nomor referensi transaksi agar tim mudah memverifikasi.</p>
+                            <div class="manual-bank-grid">
+                                {% for bank in payment_account.bank_accounts %}
+                                <article class="manual-bank-item">
+                                    <span class="bank-pill">{{ bank.bank }}</span>
+                                    <strong>{{ bank.account_name }}</strong>
+                                    <p>{{ bank.account_number }}</p>
+                                    <small>{{ bank.note }}</small>
+                                </article>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="payment-method-detail" data-method="qris">
+                            <h3>QRIS / QR Code</h3>
+                            {% if midtrans_enabled %}
+                            <p>Metode ini akan membuka QRIS dinamis melalui Midtrans sehingga user bisa scan langsung dari mobile banking atau e-wallet.</p>
+                            {% elif demo_qris_enabled %}
+                            <p>Pilihan ini akan membuat QRIS simulasi untuk pengujian guru. Setelah tombol dikirim, sistem menampilkan QR demo dan menyediakan tombol simulasi sukses tanpa dana asli.</p>
+                            {% else %}
+                            <p>Scan QRIS bisnis perusahaan di bawah ini. Jika file QRIS belum diisi, tambahkan link gambarnya di <code>company_payment_config.py</code> atau <code>.env</code>.</p>
+                            {% if manual_qris_image %}
+                            <div class="manual-qris-box">
+                                <img src="{{ manual_qris_image }}" alt="QRIS {{ payment_account.qris.merchant_name }}">
+                                <div>
+                                    <strong>{{ payment_account.qris.merchant_name }}</strong>
+                                    <p>{{ payment_account.qris.note }}</p>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="manual-qris-empty">
+                                <i class="fas fa-qrcode"></i>
+                                <p>Gambar QRIS perusahaan belum dihubungkan.</p>
+                            </div>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+
+                        {% for wallet in payment_account.ewallet_accounts %}
+                        <div class="payment-method-detail" data-method="{{ wallet.code }}">
+                            <h3>{{ wallet.label }}</h3>
+                            <p>Gunakan kanal e-wallet resmi perusahaan berikut, lalu simpan nomor referensi transaksi agar tim bisa memverifikasi pembayaran dengan lebih cepat.</p>
+                            <div class="manual-bank-grid single-column">
+                                <article class="manual-bank-item wallet-item">
+                                    <span class="bank-pill">{{ wallet.label }}</span>
+                                    <strong>{{ wallet.account_name }}</strong>
+                                    <p>{{ wallet.account_number }}</p>
+                                    <small>{{ wallet.note }}</small>
+                                </article>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="form-group">
+                            <label>Nomor referensi / catatan transaksi</label>
+                            <div class="input-wrap">
+                                <i class="fas fa-receipt"></i>
+                                <input type="text" name="payment_reference" placeholder="Contoh: 123456789 / bisa dikosongkan untuk QRIS demo">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Catatan tambahan</label>
+                            <textarea name="keterangan" rows="4" placeholder="Contoh: saya transfer dari rekening BCA atas nama ..."></textarea>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn-submit payment-submit-btn"
+                            id="paymentSubmitButton"
+                            data-default-label="<i class='fas fa-paper-plane'></i> Saya Sudah Lakukan Pembayaran"
+                            data-demo-label="<i class='fas fa-qrcode'></i> Buat QRIS Demo Akademik"
+                            data-gateway-label="<i class='fas fa-lock'></i> Buat Transaksi Pembayaran Aman"
+                        >
+                            {% if midtrans_enabled %}
+                            <i class="fas fa-lock"></i> Buat Transaksi Pembayaran Aman
+                            {% elif demo_qris_enabled %}
+                            <i class="fas fa-qrcode"></i> Buat QRIS Demo Akademik
+                            {% else %}
+                            <i class="fas fa-paper-plane"></i> Saya Sudah Lakukan Pembayaran
+                            {% endif %}
+                        </button>
+                    </form>
+
+                    {% if midtrans_enabled and pembayaran and pembayaran.snap_token %}
+                    <div class="payment-gateway-actions">
+                        <button type="button" class="btn-outline payment-open-snap" id="openSnapButton">
+                            <i class="fas fa-up-right-from-square"></i> Buka Kembali Jendela Pembayaran
+                        </button>
+                        {% if pembayaran.redirect_url %}
+                        <a href="{{ pembayaran.redirect_url }}" target="_blank" class="btn-outline payment-open-snap">
+                            <i class="fas fa-arrow-up-right-from-square"></i> Buka Versi Redirect
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.payment-shell {
+    display: grid;
+    grid-template-columns: 0.88fr 1.12fr;
+    gap: 28px;
+    align-items: start;
+}
+
+.payment-sidebar,
+.payment-main-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.payment-summary-card,
+.payment-form-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 18px 40px rgba(26,39,68,0.08);
+    border: 1px solid rgba(26,39,68,0.08);
+}
+
+.payment-summary-card h2,
+.payment-card-head h2 {
+    color: var(--navy);
+    margin-bottom: 8px;
+}
+
+.payment-package-name,
+.payment-card-head p,
+.payment-channel-copy {
+    color: var(--text-light);
+    line-height: 1.7;
+}
+
+.payment-demo-card {
+    background: linear-gradient(180deg, rgba(255, 248, 228, 0.96) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.payment-demo-inline-note {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 16px 18px;
+    margin-top: 18px;
+    border-radius: 18px;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    background: rgba(255, 248, 228, 0.9);
+}
+
+.payment-demo-inline-note i {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: rgba(30, 44, 87, 0.09);
+    color: var(--navy);
+    flex-shrink: 0;
+}
+
+.payment-demo-inline-note strong {
+    display: block;
+    color: var(--navy);
+    margin-bottom: 4px;
+}
+
+.payment-demo-inline-note p {
+    margin: 0;
+}
+
+.payment-breakdown-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.payment-breakdown-list div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(26,39,68,0.08);
+}
+
+.payment-breakdown-list .is-total {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.payment-breakdown-list span {
+    color: var(--text-light);
+}
+
+.payment-breakdown-list strong {
+    color: var(--navy);
+}
+
+.payment-test-note {
+    margin-top: 18px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: rgba(200,168,75,0.12);
+    border: 1px solid rgba(200,168,75,0.24);
+}
+
+.payment-test-note strong {
+    display: block;
+    color: var(--navy);
+    margin-bottom: 6px;
+}
+
+.payment-status-stack {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.payment-status-stack div {
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: #f8fafc;
+    border: 1px solid rgba(26,39,68,0.08);
+}
+
+.payment-status-stack span {
+    display: block;
+    color: var(--text-light);
+    margin-bottom: 6px;
+}
+
+.payment-status-stack strong {
+    color: var(--navy);
+}
+
+.payment-method-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.payment-option-card {
+    display: block;
+    cursor: pointer;
+}
+
+.payment-option-card input {
+    display: none;
+}
+
+.payment-option-body {
+    display: flex;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 18px;
+    background: #fff;
+    border: 1px solid rgba(26,39,68,0.1);
+    transition: 0.2s ease;
+}
+
+.payment-option-card input:checked + .payment-option-body {
+    border-color: rgba(200,168,75,0.8);
+    box-shadow: 0 10px 24px rgba(200,168,75,0.16);
+    background: linear-gradient(180deg, rgba(200,168,75,0.08) 0%, rgba(200,168,75,0.03) 100%);
+}
+
+.payment-option-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(26,39,68,0.08);
+    color: var(--gold);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.payment-option-body strong {
+    display: block;
+    color: var(--navy);
+    margin-bottom: 4px;
+}
+
+.payment-option-body p {
+    color: var(--text-light);
+    line-height: 1.7;
+}
+
+.payment-method-detail {
+    display: none;
+    padding: 18px 20px;
+    border-radius: 18px;
+    background: #f8fafc;
+    border: 1px solid rgba(26,39,68,0.08);
+}
+
+.payment-method-detail.active {
+    display: block;
+}
+
+.payment-method-detail h3 {
+    color: var(--navy);
+    margin-bottom: 8px;
+}
+
+.payment-method-detail p {
+    color: var(--text-light);
+    line-height: 1.7;
+}
+
+.manual-bank-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.manual-bank-grid.single-column {
+    grid-template-columns: 1fr;
+}
+
+.manual-bank-item {
+    padding: 16px;
+    border-radius: 18px;
+    background: #fff;
+    border: 1px solid rgba(26,39,68,0.08);
+}
+
+.bank-pill {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(26,39,68,0.1);
+    color: var(--navy);
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.manual-bank-item strong {
+    display: block;
+    color: var(--navy);
+    margin-bottom: 6px;
+}
+
+.manual-bank-item p {
+    font-size: 1.1rem;
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.manual-bank-item small {
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+.wallet-item p {
+    color: #128c7e;
+}
+
+.manual-qris-box {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 18px;
+    align-items: center;
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 18px;
+    background: #fff;
+    border: 1px solid rgba(26,39,68,0.08);
+}
+
+.manual-qris-box img {
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid rgba(26,39,68,0.08);
+}
+
+.manual-qris-box strong {
+    display: block;
+    color: var(--navy);
+    margin-bottom: 8px;
+}
+
+.manual-qris-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 24px;
+    border-radius: 18px;
+    background: #fff;
+    border: 1px dashed rgba(26,39,68,0.18);
+    color: var(--text-light);
+}
+
+.payment-method-form textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(26,39,68,0.12);
+    resize: vertical;
+    min-height: 110px;
+    font-family: inherit;
+}
+
+.payment-submit-btn {
+    margin-top: 8px;
+}
+
+.payment-gateway-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.payment-open-snap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-radius: 999px;
+    text-decoration: none;
+}
+
+@media (max-width: 992px) {
+    .payment-shell {
+        grid-template-columns: 1fr;
+        gap: 22px;
+    }
+}
+
+@media (max-width: 768px) {
+    .manual-bank-grid,
+    .manual-qris-box {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-sidebar,
+    .payment-main-panel {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .payment-summary-card,
+    .payment-form-card {
+        border-radius: 22px;
+        padding: 20px 16px;
+    }
+
+    .payment-option-body {
+        padding: 15px;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .payment-option-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+    }
+
+    .payment-method-detail {
+        padding: 16px;
+    }
+
+    .manual-bank-item p {
+        font-size: 1rem;
+    }
+
+    .payment-breakdown-list div {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .payment-status-stack div,
+    .manual-bank-item,
+    .manual-qris-box {
+        border-radius: 16px;
+    }
+
+    .payment-method-form {
+        gap: 12px;
+    }
+
+    .payment-gateway-actions {
+        flex-direction: column;
+    }
+
+    .payment-open-snap {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 420px) {
+    .payment-summary-card h2,
+    .payment-card-head h2 {
+        font-size: 1.5rem;
+    }
+
+    .payment-shell {
+        gap: 18px;
+    }
+
+    .payment-demo-inline-note {
+        padding: 14px;
+    }
+
+    .payment-option-body {
+        padding: 14px;
+    }
+
+    .payment-option-body strong {
+        font-size: 1rem;
+    }
+
+    .payment-option-body p,
+    .payment-channel-copy,
+    .payment-method-detail p,
+    .manual-bank-item small {
+        font-size: 0.92rem;
+    }
+
+    .manual-qris-box {
+        padding: 14px;
+    }
+
+    .payment-breakdown-list {
+        gap: 10px;
+    }
+}
+</style>
+
+{% if midtrans_enabled %}
+<script src="{{ midtrans_snap_js_url }}" data-client-key="{{ midtrans_client_key }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const methodRadios = document.querySelectorAll('input[name="metode_pembayaran"]');
+    const methodDetails = document.querySelectorAll('.payment-method-detail');
+    const submitButton = document.getElementById('paymentSubmitButton');
+    const demoQrisEnabled = {{ demo_qris_enabled|tojson }};
+    const snapToken = {{ pembayaran.snap_token|tojson if pembayaran and pembayaran.snap_token else 'null' }};
+    const redirectUrl = {{ pembayaran.redirect_url|tojson if pembayaran and pembayaran.redirect_url else 'null' }};
+    const autoLaunch = {{ launch_snap|tojson }};
+
+    function syncMidtransResult(resultPayload) {
+        return fetch({{ url_for('api_midtrans_sync', pemesanan_id=pemesanan.id)|tojson }}, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(resultPayload || {})
+        });
+    }
+
+    function openSnap() {
+        if (!snapToken || !window.snap) {
+            if (redirectUrl) {
+                window.open(redirectUrl, '_blank');
+            }
+            return;
+        }
+
+        window.snap.pay(snapToken, {
+            onSuccess: function(result) {
+                syncMidtransResult(result).finally(function() {
+                    window.location.href = {{ url_for('konfirmasi_pembayaran', pemesanan_id=pemesanan.id)|tojson }};
+                });
+            },
+            onPending: function(result) {
+                syncMidtransResult(result).finally(function() {
+                    window.location.href = {{ url_for('konfirmasi_pembayaran', pemesanan_id=pemesanan.id)|tojson }};
+                });
+            },
+            onError: function(result) {
+                syncMidtransResult(result).finally(function() {
+                    alert('Pembayaran belum berhasil diproses. Anda bisa coba lagi dari halaman ini.');
+                });
+            },
+            onClose: function() {
+                console.log('Snap popup ditutup oleh user.');
+            }
+        });
+    }
+
+    function updateSubmitButton(selectedMethod) {
+        if (!submitButton) {
+            return;
+        }
+        if (selectedMethod === 'qris' && demoQrisEnabled) {
+            submitButton.innerHTML = submitButton.dataset.demoLabel;
+            return;
+        }
+        submitButton.innerHTML = submitButton.dataset.gatewayLabel;
+    }
+
+    methodRadios.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            methodDetails.forEach(function(detail) {
+                detail.classList.toggle('active', detail.dataset.method === radio.value);
+            });
+            updateSubmitButton(radio.value);
+        });
+    });
+
+    const openSnapButton = document.getElementById('openSnapButton');
+    if (openSnapButton) {
+        openSnapButton.addEventListener('click', openSnap);
+    }
+
+    if (autoLaunch && snapToken) {
+        openSnap();
+    }
+
+    const checkedMethod = document.querySelector('input[name="metode_pembayaran"]:checked');
+    updateSubmitButton(checkedMethod ? checkedMethod.value : 'bank_transfer');
+});
+</script>
+{% else %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const methodRadios = document.querySelectorAll('input[name="metode_pembayaran"]');
+    const methodDetails = document.querySelectorAll('.payment-method-detail');
+    const submitButton = document.getElementById('paymentSubmitButton');
+    const demoQrisEnabled = {{ demo_qris_enabled|tojson }};
+
+    function updateSubmitButton(selectedMethod) {
+        if (!submitButton) {
+            return;
+        }
+        if (selectedMethod === 'qris' && demoQrisEnabled) {
+            submitButton.innerHTML = submitButton.dataset.demoLabel;
+            return;
+        }
+        submitButton.innerHTML = submitButton.dataset.defaultLabel;
+    }
+
+    methodRadios.forEach(function(radio) {
+        radio.addEventListener('change', function () {
+            methodDetails.forEach(function(detail) {
+                detail.classList.toggle('active', detail.dataset.method === radio.value);
+            });
+            updateSubmitButton(radio.value);
+        });
+    });
+
+    const checkedMethod = document.querySelector('input[name="metode_pembayaran"]:checked');
+    updateSubmitButton(checkedMethod ? checkedMethod.value : 'bank_transfer');
+});
+</script>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Backoffice EL Travel{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="backoffice-body">
+    <div class="backoffice-shell">
+        <aside class="backoffice-sidebar">
+            <a href="{{ url_for('backoffice_dashboard') }}" class="backoffice-logo">
+                <span class="logo-el">EL</span><span class="logo-travel"> Backoffice</span>
+            </a>
+
+            <div class="backoffice-staff-card">
+                <span class="backoffice-avatar">{{ current_staff.name[:1] }}</span>
+                <div>
+                    <strong>{{ current_staff.name }}</strong>
+                    <small>{{ current_staff.role_label }}</small>
+                </div>
+            </div>
+
+            <div class="backoffice-sidebar-status">
+                <span class="section-tag">Sync Internal</span>
+                <strong>Semua booking customer, pembayaran, promo, dan update katalog masuk ke dashboard ini.</strong>
+                <p>Gunakan menu di bawah untuk rekap harian, maintenance data, dan tindak lanjut operasional perusahaan.</p>
+            </div>
+
+            <nav class="backoffice-nav">
+                <a href="{{ url_for('backoffice_dashboard') }}" class="{% if request.endpoint == 'backoffice_dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i> Overview
+                </a>
+                <a href="{{ url_for('backoffice_orders') }}" class="{% if request.endpoint in ['backoffice_orders', 'backoffice_order_detail'] %}active{% endif %}">
+                    <i class="fas fa-receipt"></i> Kelola Pesanan
+                </a>
+                <a href="{{ url_for('backoffice_destinations') }}" class="{% if request.endpoint in ['backoffice_destinations', 'backoffice_destination_detail'] %}active{% endif %}">
+                    <i class="fas fa-map-location-dot"></i> Destinasi & Paket
+                </a>
+                <a href="{{ url_for('backoffice_promotions') }}" class="{% if request.endpoint == 'backoffice_promotions' %}active{% endif %}">
+                    <i class="fas fa-tags"></i> Promo & Diskon
+                </a>
+                <a href="{{ url_for('backoffice_finance') }}" class="{% if request.endpoint == 'backoffice_finance' %}active{% endif %}">
+                    <i class="fas fa-wallet"></i> Keuangan
+                </a>
+                {% if current_staff.role == 'owner' %}
+                <a href="{{ url_for('backoffice_staff') }}" class="{% if request.endpoint == 'backoffice_staff' %}active{% endif %}">
+                    <i class="fas fa-user-gear"></i> Tim & Akses
+                </a>
+                {% endif %}
+                <a href="{{ url_for('index') }}" target="_blank">
+                    <i class="fas fa-arrow-up-right-from-square"></i> Buka Website Utama
+                </a>
+            </nav>
+
+            <div class="backoffice-sidebar-footer">
+                <p>Website customer tetap bersih. Semua proses internal dikerjakan dari dashboard ini.</p>
+                <a href="{{ url_for('backoffice_logout') }}" class="btn-outline-dark backoffice-sidebar-btn">
+                    <i class="fas fa-right-from-bracket"></i> Logout Staff
+                </a>
+            </div>
+        </aside>
+
+        <div class="backoffice-main">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-container backoffice-flash-container in-layout">
+                {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                    <span>{{ message }}</span>
+                    <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <header class="backoffice-topbar">
+                <div class="backoffice-topbar-left">
+                    <button id="boHamburger" class="bo-hamburger">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <span class="section-tag">{{ current_staff.role_label }}</span>
+                    <h1>{% block backoffice_title %}{% endblock %}</h1>
+                    <p>{% block backoffice_subtitle %}{% endblock %}</p>
+                </div>
+                <div class="backoffice-topbar-side">
+                    <div class="backoffice-topbar-meta">
+                        <span><i class="fas fa-envelope"></i> {{ current_staff.email }}</span>
+                        <span><i class="fas fa-user-shield"></i> Dashboard Internal</span>
+                    </div>
+                    {% block backoffice_header_actions %}{% endblock %}
+                </div>
+            </header>
+
+            <main class="backoffice-content">
+                {% block backoffice_content %}{% endblock %}
+            </main>
+        </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const hamburger = document.getElementById('boHamburger');
+        const sidebar = document.querySelector('.backoffice-sidebar');
+        if (hamburger && sidebar) {
+            hamburger.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+        }
+    });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

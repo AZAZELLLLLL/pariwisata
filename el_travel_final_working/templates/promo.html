@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Promo Destinasi - EL Travel{% endblock %}
+{% block content %}
+
+<section class="page-hero small">
+    <div class="page-hero-bg">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg" alt="Promo EL Travel">
+        <div class="page-hero-overlay"></div>
+    </div>
+    <div class="page-hero-content">
+        <h1>Promo <span class="accent">Destinasi</span></h1>
+        <p>Destinasi yang sedang mendapat diskon aktif akan tampil di halaman ini secara otomatis sesuai periode promo yang diatur tim internal.</p>
+    </div>
+</section>
+
+<section class="section-padding promo-page-section">
+    <div class="container">
+        {% if db_error %}
+        <div class="empty-state">
+            <i class="fas fa-database"></i>
+            <h3>Promo belum bisa dimuat</h3>
+            <p>Pastikan tabel promo dan data destinasi di database sudah terimport dengan versi terbaru.</p>
+        </div>
+        {% elif promo_rows %}
+        <div class="promo-page-grid">
+            {% for item in promo_rows %}
+            <article class="promo-showcase-card">
+                <div class="promo-showcase-media">
+                    <img src="{{ item.foto }}" alt="{{ item.nama }}" loading="lazy"
+                         onerror="this.src='https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1200&q=80'">
+                    <span class="promo-badge">{{ item.promo_badge }}</span>
+                    <span class="promo-country-pill">{{ item.negara or item.lokasi }}</span>
+                </div>
+                <div class="promo-showcase-body">
+                    <div class="promo-showcase-topline">
+                        <span class="section-tag">Promo Aktif</span>
+                        <span class="promo-period">{{ item.promo_period_text }}</span>
+                    </div>
+                    <h2>{{ item.nama }}</h2>
+                    <p class="promo-showcase-copy">{{ item.promo_caption or item.deskripsi }}</p>
+                    <div class="promo-showcase-meta">
+                        <span><i class="fas fa-map-location-dot"></i> {{ item.benua or 'Tujuan Wisata' }}</span>
+                        <span><i class="fas fa-box-open"></i> {{ item.paket_count }} paket tersedia</span>
+                    </div>
+                    <div class="promo-showcase-price">
+                        <div>
+                            <small>Harga normal</small>
+                            <span>{{ item.display_original_price|idr }}</span>
+                        </div>
+                        <div>
+                            <small>Harga promo</small>
+                            <strong>{{ item.display_discounted_price|idr }}</strong>
+                        </div>
+                    </div>
+                    <div class="promo-showcase-actions">
+                        <a href="{{ url_for('detail_wisata', id=item.id) }}" class="btn-primary">
+                            <i class="fas fa-eye"></i> Lihat Detail
+                        </a>
+                        <a href="{{ url_for('destinasi', negara=item.negara) if item.negara else url_for('destinasi') }}" class="btn-outline-dark">
+                            Jelajahi Negara
+                        </a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-tags"></i>
+            <h3>Belum ada promo aktif</h3>
+            <p>Begitu tim internal mengaktifkan diskon baru, destinasi promo akan langsung muncul di halaman ini.</p>
+            <a href="{{ url_for('destinasi') }}" class="btn-primary">Lihat Semua Destinasi</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}
