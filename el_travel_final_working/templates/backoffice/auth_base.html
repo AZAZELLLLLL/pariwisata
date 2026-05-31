@@ -5,28 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Backoffice EL Travel{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/backoffice.css') }}">
 </head>
 <body class="backoffice-auth-body">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <div class="flash-container backoffice-flash-container">
+    <div class="bo-flash-container backoffice-flash-container" style="position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:200;width:min(420px,92vw);">
         {% for category, message in messages %}
         <div class="flash flash-{{ category }}">
             <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
             <span>{{ message }}</span>
-            <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+            <button type="button" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
         </div>
         {% endfor %}
     </div>
     {% endif %}
     {% endwith %}
 
-    <main class="backoffice-auth-shell">
-        <section class="backoffice-auth-hero">
-            <span class="section-tag">EL Travel Backoffice</span>
+    <main class="bo-auth-shell backoffice-auth-shell">
+        <section class="bo-auth-hero backoffice-auth-hero">
+            <span class="section-tag">EL Travel Back Office</span>
             <h1>{% block auth_heading %}{% endblock %}</h1>
             <p>{% block auth_copy %}{% endblock %}</p>
 
@@ -35,31 +36,31 @@
                     <i class="fas fa-shield-halved"></i>
                     <div>
                         <strong>Akses terpisah dari website utama</strong>
-                        <span>Dashboard ini khusus owner dan staff untuk mengelola pesanan pelanggan.</span>
+                        <span>Dashboard khusus owner dan staff operasional.</span>
                     </div>
                 </article>
                 <article>
                     <i class="fas fa-receipt"></i>
                     <div>
-                        <strong>Fokus ke proses operasional</strong>
-                        <span>Mulai dari cek pembayaran, follow up dokumen, sampai tiket dan voucher.</span>
+                        <strong>Kelola pesanan end-to-end</strong>
+                        <span>Verifikasi pembayaran, tiket, voucher, dan dokumen.</span>
                     </div>
                 </article>
                 <article>
-                    <i class="fas fa-link"></i>
+                    <i class="fas fa-tags"></i>
                     <div>
-                        <strong>Data tetap satu database</strong>
-                        <span>Booking dari website customer langsung masuk ke antrean backoffice tanpa input ulang.</span>
+                        <strong>Promo sinkron ke publik</strong>
+                        <span>Diskon yang Anda atur otomatis tampil di halaman promo customer.</span>
                     </div>
                 </article>
             </div>
 
-            <a href="{{ url_for('index') }}" class="btn-outline-dark backoffice-auth-link">
+            <a href="{{ url_for('index') }}" class="bo-btn bo-btn--outline backoffice-auth-link" style="color:#fff;border-color:rgba(255,255,255,0.35);background:transparent;align-self:flex-start;">
                 <i class="fas fa-arrow-left"></i> Kembali ke Website Utama
             </a>
         </section>
 
-        <section class="backoffice-auth-card-wrap">
+        <section class="bo-auth-card-wrap backoffice-auth-card-wrap">
             {% block auth_card %}{% endblock %}
         </section>
     </main>

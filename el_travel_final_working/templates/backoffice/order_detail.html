@@ -3,12 +3,12 @@
 {% block backoffice_title %}Workspace Pesanan {{ order_row.booking_code_display }}{% endblock %}
 {% block backoffice_subtitle %}Kelola verifikasi pembayaran, status dokumen, tiket, voucher, dan catatan internal dari satu halaman yang sama.{% endblock %}
 {% block backoffice_header_actions %}
-<div class="backoffice-header-actions">
-    <a href="{{ url_for('backoffice_orders') }}" class="btn-outline-dark">
-        <i class="fas fa-arrow-left"></i> Kembali ke Antrean
+<div class="bo-header-actions backoffice-header-actions">
+    <a href="{{ url_for('backoffice_orders') }}" class="bo-btn bo-btn--outline">
+        <i class="fas fa-arrow-left"></i> Antrean
     </a>
-    <a href="{{ url_for('backoffice_finance') }}" class="btn-primary">
-        <i class="fas fa-wallet"></i> Riwayat Pembayaran
+    <a href="{{ url_for('backoffice_finance') }}" class="bo-btn">
+        <i class="fas fa-wallet"></i> Keuangan
     </a>
 </div>
 {% endblock %}
@@ -34,18 +34,18 @@
         <form method="POST">
             <input type="hidden" name="action" value="approve_payment">
             <input type="hidden" name="action_note" value="Pembayaran disetujui dari workspace pesanan.">
-            <button type="submit" class="btn-primary" {% if not order_row.pembayaran_id or order_row.status_pembayaran == 'berhasil' %}disabled{% endif %}>
+            <button type="submit" class="bo-btn" {% if not order_row.pembayaran_id or order_row.status_pembayaran == 'berhasil' %}disabled{% endif %}>
                 <i class="fas fa-badge-check"></i> {{ 'Pembayaran Sudah Lunas' if order_row.status_pembayaran == 'berhasil' else 'Verifikasi Pembayaran' }}
             </button>
         </form>
         <form method="POST">
             <input type="hidden" name="action" value="complete_order">
             <input type="hidden" name="action_note" value="Pesanan ditandai selesai dari workspace.">
-            <button type="submit" class="btn-outline-dark">
+            <button type="submit" class="bo-btn bo-btn--outline">
                 <i class="fas fa-flag-checkered"></i> Tandai Selesai
             </button>
         </form>
-        <a href="{{ url_for('backoffice_orders') }}" class="btn-outline-dark">
+        <a href="{{ url_for('backoffice_orders') }}" class="bo-btn bo-btn--outline">
             <i class="fas fa-arrow-left"></i> Kembali ke Antrean
         </a>
     </div>
@@ -147,12 +147,12 @@
             <form method="POST" class="backoffice-inline-form">
                 <input type="hidden" name="action" value="approve_payment">
                 <textarea name="action_note" rows="3" placeholder="Catatan saat menyetujui pembayaran">{{ order_row.verification_note or '' }}</textarea>
-                <button type="submit" class="btn-primary" {% if not order_row.pembayaran_id or order_row.status_pembayaran == 'berhasil' %}disabled{% endif %}>{{ 'Sudah Berhasil' if order_row.status_pembayaran == 'berhasil' else 'Setujui Pembayaran' }}</button>
+                <button type="submit" class="bo-btn" {% if not order_row.pembayaran_id or order_row.status_pembayaran == 'berhasil' %}disabled{% endif %}>{{ 'Sudah Berhasil' if order_row.status_pembayaran == 'berhasil' else 'Setujui Pembayaran' }}</button>
             </form>
             <form method="POST" class="backoffice-inline-form warning">
                 <input type="hidden" name="action" value="reject_payment">
                 <textarea name="action_note" rows="3" placeholder="Alasan jika pembayaran perlu ditolak atau diminta ulang"></textarea>
-                <button type="submit" class="btn-outline-dark" {% if not order_row.pembayaran_id %}disabled{% endif %}>Tolak / Minta Ulang</button>
+                <button type="submit" class="bo-btn bo-btn--outline" {% if not order_row.pembayaran_id %}disabled{% endif %}>Tolak / Minta Ulang</button>
             </form>
         </div>
     </div>
@@ -238,7 +238,7 @@
             </div>
 
             <div class="backoffice-form-actions">
-                <button type="submit" class="btn-primary">Simpan Update Operasional</button>
+                <button type="submit" class="bo-btn">Simpan Update Operasional</button>
             </div>
         </form>
     </div>

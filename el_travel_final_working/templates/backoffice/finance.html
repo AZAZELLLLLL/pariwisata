@@ -3,11 +3,11 @@
 {% block backoffice_title %}Keuangan dan Riwayat Pembayaran{% endblock %}
 {% block backoffice_subtitle %}Pantau pembayaran masuk, transaksi yang masih menunggu verifikasi, dan nominal yang sudah terkonfirmasi dari dashboard internal.{% endblock %}
 {% block backoffice_header_actions %}
-<div class="backoffice-header-actions">
-    <a href="{{ url_for('backoffice_finance_export', q=current_search_query, status=current_status_filter, method=current_method_filter) }}" class="btn-outline-dark">
+<div class="bo-header-actions backoffice-header-actions">
+    <a href="{{ url_for('backoffice_finance_export', q=current_search_query, status=current_status_filter, method=current_method_filter) }}" class="bo-btn bo-btn--outline">
         <i class="fas fa-file-csv"></i> Export CSV
     </a>
-    <a href="{{ url_for('backoffice_orders') }}" class="btn-primary">
+    <a href="{{ url_for('backoffice_orders') }}" class="bo-btn">
         <i class="fas fa-receipt"></i> Buka Workspace Pesanan
     </a>
 </div>
@@ -115,8 +115,8 @@
             </select>
         </div>
         <div class="backoffice-filter-actions">
-            <button type="submit" class="btn-primary">Terapkan</button>
-            <a href="{{ url_for('backoffice_finance') }}" class="btn-outline-dark">Reset</a>
+            <button type="submit" class="bo-btn">Terapkan</button>
+            <a href="{{ url_for('backoffice_finance') }}" class="bo-btn bo-btn--outline">Reset</a>
         </div>
     </form>
 </section>

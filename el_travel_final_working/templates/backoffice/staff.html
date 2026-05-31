@@ -3,8 +3,8 @@
 {% block backoffice_title %}Tim Internal dan Hak Akses{% endblock %}
 {% block backoffice_subtitle %}Kelola akun pegawai yang boleh membuka backoffice, atur peran mereka, dan jaga agar hanya staff resmi yang bisa memproses data perusahaan.{% endblock %}
 {% block backoffice_header_actions %}
-<div class="backoffice-header-actions">
-    <a href="{{ url_for('backoffice_dashboard') }}" class="btn-outline-dark">
+<div class="bo-header-actions backoffice-header-actions">
+    <a href="{{ url_for('backoffice_dashboard') }}" class="bo-btn bo-btn--outline">
         <i class="fas fa-chart-line"></i> Kembali ke Overview
     </a>
 </div>
@@ -95,7 +95,7 @@
             </div>
 
             <div class="backoffice-form-actions">
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="bo-btn">
                     <i class="fas fa-user-plus"></i> Buat Akun Staff
                 </button>
             </div>
@@ -190,7 +190,7 @@
                     </div>
 
                     <div class="backoffice-form-actions split">
-                        <button type="submit" class="btn-primary">Simpan Perubahan</button>
+                        <button type="submit" class="bo-btn">Simpan Perubahan</button>
                     </div>
                 </form>
             </article>

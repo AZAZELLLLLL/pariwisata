@@ -3,12 +3,12 @@
 {% block backoffice_title %}Destinasi dan Paket Keberangkatan{% endblock %}
 {% block backoffice_subtitle %}Tambah destinasi baru, cek katalog yang sudah aktif, lalu buka workspace detail untuk mengatur paket dan jadwal keberangkatan.{% endblock %}
 {% block backoffice_header_actions %}
-<div class="backoffice-header-actions">
-    <a href="{{ url_for('backoffice_promotions') }}" class="btn-outline-dark">
-        <i class="fas fa-tags"></i> Atur Promo
+<div class="bo-header-actions backoffice-header-actions">
+    <a href="{{ url_for('backoffice_promotions') }}" class="bo-btn bo-btn--outline">
+        <i class="fas fa-tags"></i> Promo
     </a>
-    <a href="{{ url_for('destinasi') }}" target="_blank" class="btn-primary">
-        <i class="fas fa-up-right-from-square"></i> Lihat Halaman Publik
+    <a href="{{ url_for('destinasi') }}" target="_blank" rel="noopener" class="bo-btn">
+        <i class="fas fa-up-right-from-square"></i> Website Publik
     </a>
 </div>
 {% endblock %}
@@ -70,8 +70,8 @@
             </select>
         </div>
         <div class="backoffice-filter-actions">
-            <button type="submit" class="btn-primary">Terapkan</button>
-            <a href="{{ url_for('backoffice_destinations') }}" class="btn-outline-dark">Reset</a>
+            <button type="submit" class="bo-btn">Terapkan</button>
+            <a href="{{ url_for('backoffice_destinations') }}" class="bo-btn bo-btn--outline">Reset</a>
         </div>
     </form>
 </section>
@@ -123,7 +123,7 @@
                     </div>
                 </div>
                 <div class="backoffice-order-card-actions">
-                    <a href="{{ url_for('backoffice_destination_detail', wisata_id=item.id) }}" class="btn-primary">
+                    <a href="{{ url_for('backoffice_destination_detail', wisata_id=item.id) }}" class="bo-btn">
                         <i class="fas fa-pen-to-square"></i> Kelola Destinasi
                     </a>
                 </div>
@@ -255,7 +255,7 @@
             </div>
 
             <div class="backoffice-form-actions">
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="bo-btn">
                     <i class="fas fa-plus"></i> Simpan Destinasi Baru
                 </button>
             </div>

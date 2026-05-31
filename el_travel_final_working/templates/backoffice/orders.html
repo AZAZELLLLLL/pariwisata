@@ -3,12 +3,12 @@
 {% block backoffice_title %}Kelola Pesanan Customer{% endblock %}
 {% block backoffice_subtitle %}Filter antrean berdasarkan status operasional, status pembayaran, atau cari cepat berdasarkan nama customer dan destinasi.{% endblock %}
 {% block backoffice_header_actions %}
-<div class="backoffice-header-actions">
-    <a href="{{ url_for('backoffice_dashboard') }}" class="btn-outline-dark">
-        <i class="fas fa-chart-line"></i> Overview
+<div class="bo-header-actions backoffice-header-actions">
+    <a href="{{ url_for('backoffice_dashboard') }}" class="bo-btn bo-btn--outline">
+        <i class="fas fa-chart-line"></i> Dashboard
     </a>
-    <a href="{{ url_for('backoffice_finance') }}" class="btn-primary">
-        <i class="fas fa-wallet"></i> Verifikasi Dana
+    <a href="{{ url_for('backoffice_finance') }}" class="bo-btn">
+        <i class="fas fa-wallet"></i> Keuangan
     </a>
 </div>
 {% endblock %}
@@ -72,8 +72,8 @@
             </select>
         </div>
         <div class="backoffice-filter-actions">
-            <button type="submit" class="btn-primary">Terapkan</button>
-            <a href="{{ url_for('backoffice_orders') }}" class="btn-outline-dark">Reset</a>
+            <button type="submit" class="bo-btn">Terapkan</button>
+            <a href="{{ url_for('backoffice_orders') }}" class="bo-btn bo-btn--outline">Reset</a>
         </div>
     </form>
 </section>
@@ -131,7 +131,7 @@
         </div>
 
         <div class="backoffice-order-card-actions">
-            <a href="{{ url_for('backoffice_order_detail', pemesanan_id=item.id) }}" class="btn-primary">
+            <a href="{{ url_for('backoffice_order_detail', pemesanan_id=item.id) }}" class="bo-btn">
                 <i class="fas fa-arrow-right"></i> Buka Workspace
             </a>
         </div>

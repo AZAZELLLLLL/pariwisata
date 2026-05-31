@@ -5,117 +5,129 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Backoffice EL Travel{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/backoffice.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="backoffice-body">
-    <div class="backoffice-shell">
-        <aside class="backoffice-sidebar">
-            <a href="{{ url_for('backoffice_dashboard') }}" class="backoffice-logo">
-                <span class="logo-el">EL</span><span class="logo-travel"> Backoffice</span>
+    <div class="bo-shell backoffice-shell">
+        <aside class="bo-sidebar backoffice-sidebar" id="boSidebar">
+            <a href="{{ url_for('backoffice_dashboard') }}" class="bo-sidebar-brand backoffice-logo">
+                <span class="bo-brand-icon">EL</span>
+                <span class="bo-brand-text">
+                    <strong>EL Travel</strong>
+                    <small>Back Office</small>
+                </span>
             </a>
 
-            <div class="backoffice-staff-card">
-                <span class="backoffice-avatar">{{ current_staff.name[:1] }}</span>
-                <div>
-                    <strong>{{ current_staff.name }}</strong>
-                    <small>{{ current_staff.role_label }}</small>
-                </div>
-            </div>
-
-            <div class="backoffice-sidebar-status">
-                <span class="section-tag">Sync Internal</span>
-                <strong>Semua booking customer, pembayaran, promo, dan update katalog masuk ke dashboard ini.</strong>
-                <p>Gunakan menu di bawah untuk rekap harian, maintenance data, dan tindak lanjut operasional perusahaan.</p>
-            </div>
-
-            <nav class="backoffice-nav">
-                <a href="{{ url_for('backoffice_dashboard') }}" class="{% if request.endpoint == 'backoffice_dashboard' %}active{% endif %}">
-                    <i class="fas fa-chart-line"></i> Overview
+            <nav class="bo-sidebar-nav backoffice-nav">
+                <a href="{{ url_for('backoffice_dashboard') }}" class="bo-nav-item {% if request.endpoint == 'backoffice_dashboard' %}is-active active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
                 </a>
-                <a href="{{ url_for('backoffice_orders') }}" class="{% if request.endpoint in ['backoffice_orders', 'backoffice_order_detail'] %}active{% endif %}">
-                    <i class="fas fa-receipt"></i> Kelola Pesanan
+                <a href="{{ url_for('backoffice_orders') }}" class="bo-nav-item {% if request.endpoint in ['backoffice_orders', 'backoffice_order_detail'] %}is-active active{% endif %}">
+                    <i class="fas fa-receipt"></i>
+                    <span>Kelola Pesanan</span>
                 </a>
-                <a href="{{ url_for('backoffice_destinations') }}" class="{% if request.endpoint in ['backoffice_destinations', 'backoffice_destination_detail'] %}active{% endif %}">
-                    <i class="fas fa-map-location-dot"></i> Destinasi & Paket
+                <a href="{{ url_for('backoffice_destinations') }}" class="bo-nav-item {% if request.endpoint in ['backoffice_destinations', 'backoffice_destination_detail'] %}is-active active{% endif %}">
+                    <i class="fas fa-map-location-dot"></i>
+                    <span>Destinasi & Paket</span>
                 </a>
-                <a href="{{ url_for('backoffice_promotions') }}" class="{% if request.endpoint == 'backoffice_promotions' %}active{% endif %}">
-                    <i class="fas fa-tags"></i> Promo & Diskon
+                <a href="{{ url_for('backoffice_promotions') }}" class="bo-nav-item {% if request.endpoint == 'backoffice_promotions' %}is-active active{% endif %}">
+                    <i class="fas fa-tags"></i>
+                    <span>Promo & Diskon</span>
                 </a>
-                <a href="{{ url_for('backoffice_finance') }}" class="{% if request.endpoint == 'backoffice_finance' %}active{% endif %}">
-                    <i class="fas fa-wallet"></i> Keuangan
+                <a href="{{ url_for('backoffice_finance') }}" class="bo-nav-item {% if request.endpoint == 'backoffice_finance' %}is-active active{% endif %}">
+                    <i class="fas fa-wallet"></i>
+                    <span>Keuangan</span>
                 </a>
                 {% if current_staff.role == 'owner' %}
-                <a href="{{ url_for('backoffice_staff') }}" class="{% if request.endpoint == 'backoffice_staff' %}active{% endif %}">
-                    <i class="fas fa-user-gear"></i> Tim & Akses
+                <a href="{{ url_for('backoffice_staff') }}" class="bo-nav-item {% if request.endpoint == 'backoffice_staff' %}is-active active{% endif %}">
+                    <i class="fas fa-user-gear"></i>
+                    <span>Tim & Akses</span>
                 </a>
                 {% endif %}
-                <a href="{{ url_for('index') }}" target="_blank">
-                    <i class="fas fa-arrow-up-right-from-square"></i> Buka Website Utama
+                <div class="bo-nav-divider"></div>
+                <a href="{{ url_for('index') }}" target="_blank" rel="noopener" class="bo-nav-item">
+                    <i class="fas fa-arrow-up-right-from-square"></i>
+                    <span>Website Utama</span>
                 </a>
             </nav>
 
-            <div class="backoffice-sidebar-footer">
-                <p>Website customer tetap bersih. Semua proses internal dikerjakan dari dashboard ini.</p>
-                <a href="{{ url_for('backoffice_logout') }}" class="btn-outline-dark backoffice-sidebar-btn">
-                    <i class="fas fa-right-from-bracket"></i> Logout Staff
+            <div class="bo-sidebar-footer backoffice-sidebar-footer">
+                <a href="{{ url_for('backoffice_logout') }}" class="bo-btn bo-btn--outline bo-btn--sm backoffice-sidebar-btn" style="width:100%;justify-content:center;">
+                    <i class="fas fa-right-from-bracket"></i> Logout
                 </a>
             </div>
         </aside>
 
-        <div class="backoffice-main">
+        <div class="bo-main backoffice-main">
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-            <div class="flash-container backoffice-flash-container in-layout">
+            <div class="bo-flash-container backoffice-flash-container in-layout">
                 {% for category, message in messages %}
                 <div class="flash flash-{{ category }}">
                     <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
                     <span>{{ message }}</span>
-                    <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+                    <button type="button" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
             {% endwith %}
 
-            <header class="backoffice-topbar">
-                <div class="backoffice-topbar-left">
-                    <button id="boHamburger" class="bo-hamburger">
+            <header class="bo-topbar backoffice-topbar">
+                <div class="bo-topbar-left backoffice-topbar-left">
+                    <button type="button" id="boHamburger" class="bo-hamburger" aria-label="Buka menu">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <div>
-                        <span class="section-tag">{{ current_staff.role_label }}</span>
-                    <h1>{% block backoffice_title %}{% endblock %}</h1>
-                    <p>{% block backoffice_subtitle %}{% endblock %}</p>
+                    <div class="bo-page-heading">
+                        <h1>{% block backoffice_title %}{% endblock %}</h1>
+                        <p>{% block backoffice_subtitle %}{% endblock %}</p>
+                    </div>
                 </div>
-                <div class="backoffice-topbar-side">
-                    <div class="backoffice-topbar-meta">
-                        <span><i class="fas fa-envelope"></i> {{ current_staff.email }}</span>
-                        <span><i class="fas fa-user-shield"></i> Dashboard Internal</span>
+
+                <div class="bo-topbar-center">
+                    <form id="boGlobalSearch" class="bo-search-form" data-orders-url="{{ url_for('backoffice_orders') }}">
+                        <i class="fas fa-search"></i>
+                        <input type="search" name="q" placeholder="Cari pesanan, customer, destinasi..." autocomplete="off">
+                    </form>
+                </div>
+
+                <div class="bo-topbar-right backoffice-topbar-side">
+                    <a href="{{ url_for('backoffice_orders', status='verifikasi_pembayaran') }}" class="bo-icon-btn" title="Pesanan perlu dicek">
+                        <i class="fas fa-bell"></i>
+                    </a>
+                    <div class="bo-user-menu">
+                        <button type="button" class="bo-user-chip" id="boUserChip" aria-expanded="false">
+                            <span class="bo-avatar">{{ current_staff.name[:1] }}</span>
+                            <span class="bo-user-info">
+                                <strong>{{ current_staff.name }}</strong>
+                                <small>{{ current_staff.role_label }}</small>
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="bo-user-dropdown" id="boUserDropdown">
+                            <span style="padding:8px 12px;font-size:0.78rem;color:var(--bo-text-muted);display:block;">{{ current_staff.email }}</span>
+                            <a href="{{ url_for('backoffice_dashboard') }}"><i class="fas fa-chart-line"></i> Dashboard</a>
+                            <a href="{{ url_for('backoffice_logout') }}" class="danger"><i class="fas fa-right-from-bracket"></i> Logout</a>
+                        </div>
                     </div>
                     {% block backoffice_header_actions %}{% endblock %}
                 </div>
             </header>
 
-            <main class="backoffice-content">
+            <main class="bo-content backoffice-content">
                 {% block backoffice_content %}{% endblock %}
             </main>
         </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const hamburger = document.getElementById('boHamburger');
-        const sidebar = document.querySelector('.backoffice-sidebar');
-        if (hamburger && sidebar) {
-            hamburger.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-            });
-        }
-    });
-    </script>
+    <script src="{{ url_for('static', filename='js/backoffice.js') }}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

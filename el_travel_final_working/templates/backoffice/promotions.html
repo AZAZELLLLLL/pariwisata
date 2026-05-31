@@ -3,12 +3,12 @@
 {% block backoffice_title %}Kelola Promo dan Diskon{% endblock %}
 {% block backoffice_subtitle %}Atur diskon destinasi, periode aktifnya, dan pastikan harga promo otomatis tampil ke user hanya selama masa berlaku.{% endblock %}
 {% block backoffice_header_actions %}
-<div class="backoffice-header-actions">
-    <a href="{{ url_for('backoffice_destinations') }}" class="btn-outline-dark">
-        <i class="fas fa-map-location-dot"></i> Lihat Destinasi
+<div class="bo-header-actions backoffice-header-actions">
+    <a href="{{ url_for('backoffice_destinations') }}" class="bo-btn bo-btn--outline">
+        <i class="fas fa-map-location-dot"></i> Destinasi
     </a>
-    <a href="{{ url_for('promo') }}" target="_blank" class="btn-primary">
-        <i class="fas fa-up-right-from-square"></i> Buka Halaman Promo
+    <a href="{{ url_for('promo') }}" target="_blank" rel="noopener" class="bo-btn">
+        <i class="fas fa-up-right-from-square"></i> Halaman Promo Publik
     </a>
 </div>
 {% endblock %}
@@ -56,14 +56,14 @@
             </select>
         </div>
         <div class="backoffice-filter-actions">
-            <button type="submit" class="btn-primary">Terapkan</button>
-            <a href="{{ url_for('backoffice_promotions') }}" class="btn-outline-dark">Reset</a>
+            <button type="submit" class="bo-btn">Terapkan</button>
+            <a href="{{ url_for('backoffice_promotions') }}" class="bo-btn bo-btn--outline">Reset</a>
         </div>
     </form>
 </section>
 
-<section class="backoffice-detail-grid">
-    <div class="backoffice-panel span-two">
+<section class="backoffice-workspace-split backoffice-detail-grid">
+    <div class="bo-panel backoffice-panel span-two">
         <div class="backoffice-panel-head">
             <div>
                 <span class="section-tag">New Promo</span>
@@ -136,18 +136,18 @@
             </div>
 
             <div class="backoffice-form-actions">
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-plus"></i> Simpan Promo
-                </button>
+            <button type="submit" class="bo-btn">
+                <i class="fas fa-plus"></i> Simpan Promo
+            </button>
             </div>
         </form>
     </div>
 
-    <div class="backoffice-panel span-two">
-        <div class="backoffice-panel-head">
+    <div class="bo-panel backoffice-panel span-two">
+        <div class="bo-panel-head backoffice-panel-head">
             <div>
-                <span class="section-tag">Active List</span>
-                <h2>Daftar Promo Destinasi</h2>
+                <span class="section-tag">Daftar Promo</span>
+                <h2>Promo Destinasi</h2>
             </div>
         </div>
 
@@ -246,14 +246,14 @@
                     </div>
 
                     <div class="backoffice-form-actions split">
-                        <button type="submit" class="btn-primary">Simpan Promo</button>
+                        <button type="submit" class="bo-btn">Simpan Perubahan</button>
                     </div>
                 </form>
 
                 <form method="POST" class="backoffice-inline-delete" onsubmit="return confirm('Hapus promo ini dari sistem?');">
                     <input type="hidden" name="action" value="delete_promo">
                     <input type="hidden" name="promo_id" value="{{ promo.id }}">
-                    <button type="submit" class="btn-outline-dark danger">
+                    <button type="submit" class="bo-btn bo-btn--outline bo-btn--danger">
                         <i class="fas fa-trash"></i> Hapus Promo
                     </button>
                 </form>

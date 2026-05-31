@@ -1,369 +1,279 @@
 {% extends 'backoffice/base.html' %}
-{% block title %}Overview Backoffice - EL Travel{% endblock %}
-{% block backoffice_title %}Overview Operasional{% endblock %}
-{% block backoffice_subtitle %}Ringkasan antrean pesanan, pembayaran, dan progres tiket yang perlu ditangani tim hari ini.{% endblock %}
+{% block title %}Dashboard - Backoffice EL Travel{% endblock %}
+{% block backoffice_title %}Ringkasan Operasional{% endblock %}
+{% block backoffice_subtitle %}Pantau booking, pembayaran, dan antrean operasional tim hari ini.{% endblock %}
 {% block backoffice_header_actions %}
-<div class="backoffice-header-actions">
-    <a href="{{ url_for('backoffice_orders') }}" class="btn-primary">
-        <i class="fas fa-receipt"></i> Buka Antrean
-    </a>
-    <a href="{{ url_for('backoffice_finance') }}" class="btn-outline-dark">
-        <i class="fas fa-wallet"></i> Cek Keuangan
+<div class="bo-header-actions backoffice-header-actions">
+    <a href="{{ url_for('backoffice_orders') }}" class="bo-btn">
+        <i class="fas fa-receipt"></i> Kelola Pesanan
     </a>
 </div>
 {% endblock %}
 {% block backoffice_content %}
-<section class="backoffice-command-grid">
-    <article class="backoffice-command-card spotlight">
-        <div class="backoffice-card-topline">
-            <span class="section-tag">Daily Control</span>
-            <span class="bo-badge success">Live Sync</span>
-        </div>
-        <h2>Alur kerja tim hari ini dibuat supaya pesanan baru tidak tertahan terlalu lama.</h2>
-        <p>Prioritas backoffice dimulai dari cek booking yang baru masuk, lanjut verifikasi pembayaran, lalu menerbitkan tiket dan dokumen keberangkatan sampai benar-benar siap diserahkan ke customer.</p>
 
-        <div class="backoffice-stage-board">
-            <article class="backoffice-stage-card">
-                <span class="backoffice-stage-number">01</span>
-                <strong>{{ summary.new_orders }}</strong>
-                <p>Pesanan baru menunggu respon awal tim.</p>
-            </article>
-            <article class="backoffice-stage-card">
-                <span class="backoffice-stage-number">02</span>
-                <strong>{{ summary.payment_review }}</strong>
-                <p>Pembayaran menunggu verifikasi finance.</p>
-            </article>
-            <article class="backoffice-stage-card">
-                <span class="backoffice-stage-number">03</span>
-                <strong>{{ summary.ticket_queue }}</strong>
-                <p>Tiket dan voucher perlu disiapkan.</p>
-            </article>
-            <article class="backoffice-stage-card">
-                <span class="backoffice-stage-number">04</span>
-                <strong>{{ summary.ready_to_depart }}</strong>
-                <p>Customer hampir siap berangkat.</p>
-            </article>
-        </div>
-    </article>
+<div class="bo-filter-bar" style="margin-bottom:20px;">
+    <div class="bo-filter-bar__row">
+        <span class="section-tag">Periode</span>
+        <span style="font-size:0.88rem;color:var(--bo-text-muted);">Pendapatan terkonfirmasi — 6 bulan terakhir</span>
+    </div>
+</div>
 
-    <article class="backoffice-command-card">
-        <div class="backoffice-card-topline">
-            <span class="section-tag">Maintenance Notes</span>
-            <span class="bo-badge warning">Checklist</span>
-        </div>
-        <h3>Kontrol cepat yang sebaiknya dipantau setiap hari</h3>
-        <div class="backoffice-guidance-list">
-            <article>
-                <strong>Jaga tempo follow up</strong>
-                <p>Booking baru dan pembayaran yang sudah di-submit idealnya dicek lebih dulu sebelum tim berpindah ke update katalog.</p>
-            </article>
-            <article>
-                <strong>Pantau promo aktif</strong>
-                <p>Promo yang masa berlakunya habis akan otomatis mengembalikan harga normal. Tim tinggal cek apakah campaign berikutnya perlu disiapkan.</p>
-            </article>
-            <article>
-                <strong>Rapikan laporan keuangan</strong>
-                <p>Gunakan riwayat pembayaran dan export CSV untuk menyusun laporan kas harian tanpa input ulang dari laptop lokal.</p>
-            </article>
-        </div>
-    </article>
-</section>
-
-<section class="backoffice-kpi-grid">
-    <article class="backoffice-kpi-card">
-        <span>Total Booking</span>
-        <strong>{{ summary.total_orders }}</strong>
-        <small>Semua data pesanan yang sudah masuk ke sistem.</small>
-    </article>
-    <article class="backoffice-kpi-card warning">
-        <span>Baru Masuk</span>
-        <strong>{{ summary.new_orders }}</strong>
-        <small>Perlu dipantau agar tidak tertinggal follow up awal.</small>
-    </article>
-    <article class="backoffice-kpi-card info">
-        <span>Verifikasi Pembayaran</span>
-        <strong>{{ summary.payment_review }}</strong>
-        <small>Pesanan yang sudah submit pembayaran dan perlu dicek.</small>
-    </article>
-    <article class="backoffice-kpi-card primary">
-        <span>Antrean Tiket</span>
-        <strong>{{ summary.ticket_queue }}</strong>
-        <small>Sudah dibayar dan sedang menunggu tiket diterbitkan.</small>
-    </article>
-    <article class="backoffice-kpi-card success">
-        <span>Siap Berangkat</span>
-        <strong>{{ summary.ready_to_depart }}</strong>
-        <small>Dokumen dan tiket hampir siap untuk diserahkan ke customer.</small>
-    </article>
-    <article class="backoffice-kpi-card dark">
+<section class="bo-kpi-grid bo-kpi-grid--hero backoffice-kpi-grid">
+    <article class="bo-kpi-card bo-kpi-card--highlight backoffice-kpi-card">
+        <div class="bo-kpi-icon"><i class="fas fa-chart-column"></i></div>
         <span>Revenue Terkonfirmasi</span>
         <strong>{{ summary.confirmed_revenue|idr }}</strong>
-        <small>Total pendapatan dari seluruh pembayaran berhasil.</small>
+        <small>Dari pembayaran berstatus lunas.</small>
     </article>
-    <article class="backoffice-kpi-card primary">
-        <span>Transaksi Demo</span>
-        <strong>{{ summary.demo_transactions }}</strong>
-        <small>QRIS simulasi yang tersimpan untuk presentasi guru atau QA internal.</small>
+    <article class="bo-kpi-card backoffice-kpi-card">
+        <span>Total Booking</span>
+        <strong>{{ summary.total_orders }}</strong>
+        <small>Semua pesanan di sistem.</small>
+    </article>
+    <article class="bo-kpi-card backoffice-kpi-card warning">
+        <span>Baru Masuk</span>
+        <strong>{{ summary.new_orders }}</strong>
+        <small>Perlu follow up awal.</small>
+    </article>
+    <article class="bo-kpi-card backoffice-kpi-card info">
+        <span>Verifikasi Bayar</span>
+        <strong>{{ summary.payment_review }}</strong>
+        <small>Menunggu cek finance.</small>
+    </article>
+    <article class="bo-kpi-card backoffice-kpi-card primary">
+        <span>Antrean Tiket</span>
+        <strong>{{ summary.ticket_queue }}</strong>
+        <small>Perlu diterbitkan.</small>
     </article>
 </section>
 
-<section class="backoffice-chart-section">
-    <article class="backoffice-command-card">
-        <div class="backoffice-card-topline">
+<section class="backoffice-stage-board" style="margin-bottom:24px;">
+    <article class="backoffice-stage-card">
+        <span class="backoffice-stage-number">01</span>
+        <strong>{{ summary.new_orders }}</strong>
+        <p>Pesanan baru</p>
+    </article>
+    <article class="backoffice-stage-card">
+        <span class="backoffice-stage-number">02</span>
+        <strong>{{ summary.payment_review }}</strong>
+        <p>Verifikasi pembayaran</p>
+    </article>
+    <article class="backoffice-stage-card">
+        <span class="backoffice-stage-number">03</span>
+        <strong>{{ summary.ticket_queue }}</strong>
+        <p>Tiket & voucher</p>
+    </article>
+    <article class="backoffice-stage-card">
+        <span class="backoffice-stage-number">04</span>
+        <strong>{{ summary.ready_to_depart }}</strong>
+        <p>Siap berangkat</p>
+    </article>
+</section>
+
+<section class="bo-chart-panel backoffice-chart-section">
+    <div class="backoffice-panel-head" style="border:none;padding-bottom:0;">
+        <div>
             <span class="section-tag">Trend Keuangan</span>
-            <span class="bo-badge success">Update</span>
+            <h2 style="margin:4px 0 0;font-size:1.1rem;">Grafik Pendapatan</h2>
         </div>
-        <h3>Grafik Pendapatan 6 Bulan Terakhir</h3>
-        <p>Pantau pertumbuhan nilai transaksi bulanan yang sudah berstatus berhasil.</p>
-        <div class="bo-chart-container">
-            <canvas id="revenueChart"></canvas>
-        </div>
-    </article>
+        <span class="bo-badge success">6 bulan</span>
+    </div>
+    <div class="bo-chart-container">
+        <canvas id="revenueChart"></canvas>
+    </div>
 </section>
 
-<section class="backoffice-kpi-grid">
-    <article class="backoffice-kpi-card success">
+<section class="bo-kpi-grid backoffice-kpi-grid">
+    <article class="bo-kpi-card backoffice-kpi-card success">
+        <span>Siap Berangkat</span>
+        <strong>{{ summary.ready_to_depart }}</strong>
+    </article>
+    <article class="bo-kpi-card backoffice-kpi-card success">
         <span>Destinasi Aktif</span>
         <strong>{{ summary.active_destinations }}</strong>
-        <small>Katalog yang saat ini bisa dilihat user di website utama.</small>
     </article>
-    <article class="backoffice-kpi-card info">
+    <article class="bo-kpi-card backoffice-kpi-card info">
         <span>Promo Aktif</span>
         <strong>{{ summary.active_promos }}</strong>
-        <small>Diskon yang sedang berjalan dan tampil otomatis ke publik.</small>
     </article>
-    <article class="backoffice-kpi-card primary">
+    <article class="bo-kpi-card backoffice-kpi-card primary">
         <span>Staff Aktif</span>
         <strong>{{ summary.active_staff }}</strong>
-        <small>Jumlah akun owner dan pegawai yang masih bisa masuk ke backoffice.</small>
     </article>
 </section>
 
-<section class="backoffice-workspace-grid">
-    <div class="backoffice-panel">
-        <div class="backoffice-panel-head">
-            <div>
-                <span class="section-tag">Priority Queue</span>
-                <h2>Pesanan yang Perlu Dilihat Dulu</h2>
-            </div>
-            <a href="{{ url_for('backoffice_orders') }}" class="btn-outline-dark">Lihat Semua</a>
-        </div>
-
-        <div class="backoffice-table-wrap">
-            <table class="backoffice-table">
-                <thead>
-                    <tr>
-                        <th>Kode</th>
-                        <th>Customer</th>
-                        <th>Destinasi</th>
-                        <th>Status Operasional</th>
-                        <th>Pembayaran</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in recent_orders %}
-                    <tr>
-                        <td>
-                            <strong>{{ item.booking_code_display }}</strong>
-                            <small>{{ item.tanggal_pesan.strftime('%d %b %Y %H:%M') if item.tanggal_pesan else '-' }}</small>
-                        </td>
-                        <td>
-                            <strong>{{ item.nama_pemesan }}</strong>
-                            <small>{{ item.email }}</small>
-                        </td>
-                        <td>
-                            <strong>{{ item.wisata_nama }}</strong>
-                            <small>{{ item.nama_paket }}</small>
-                        </td>
-                        <td><span class="bo-badge {{ item.operational_meta.tone }}">{{ item.operational_meta.label }}</span></td>
-                        <td><span class="bo-badge {{ item.payment_meta.tone }}">{{ item.payment_meta.label }}</span></td>
-                        <td><a href="{{ url_for('backoffice_order_detail', pemesanan_id=item.id) }}" class="backoffice-link-inline">Buka Detail</a></td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="backoffice-empty-inline">Belum ada pesanan yang tampil di antrean.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="backoffice-side-stack">
-        <div class="backoffice-panel">
-            <div class="backoffice-panel-head">
-                <div>
-                    <span class="section-tag">Live Activity</span>
-                    <h2>Aktivitas Terbaru</h2>
-                </div>
-            </div>
-
-            <div class="backoffice-log-list">
-                {% for log in recent_logs %}
-                <article class="backoffice-log-item">
-                    <div class="backoffice-log-dot"></div>
-                    <div>
-                        <strong>{{ log.status_label }}</strong>
-                        <p>{{ log.message }}</p>
-                        <small>{{ log.kode_pemesanan or ('ELT-' ~ '%06d'|format(log.pemesanan_id)) }} - {{ log.nama_pemesan }} - {{ log.created_at.strftime('%d %b %Y %H:%M') if log.created_at else '-' }}</small>
-                    </div>
-                </article>
-                {% else %}
-                <div class="backoffice-empty-inline">Belum ada log aktivitas yang tersimpan.</div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="backoffice-panel">
-            <div class="backoffice-panel-head">
-                <div>
-                    <span class="section-tag">Service Pulse</span>
-                    <h2>Snapshot Kinerja Hari Ini</h2>
-                </div>
-            </div>
-            <div class="backoffice-summary-strip">
-                <article class="backoffice-summary-card">
-                    <span>Revenue Terkonfirmasi</span>
-                    <strong>{{ summary.confirmed_revenue|idr }}</strong>
-                    <small>Dari pembayaran yang sudah dinyatakan lunas.</small>
-                </article>
-                <article class="backoffice-summary-card">
-                    <span>Catalog Siap Jual</span>
-                    <strong>{{ summary.active_destinations }}</strong>
-                    <small>Destinasi aktif di website customer.</small>
-                </article>
-                <article class="backoffice-summary-card">
-                    <span>Promo Berjalan</span>
-                    <strong>{{ summary.active_promos }}</strong>
-                    <small>Diskon aktif yang tampil ke publik.</small>
-                </article>
-                <article class="backoffice-summary-card">
-                    <span>Demo Akademik</span>
-                    <strong>{{ summary.demo_transactions }}</strong>
-                    <small>{{ summary.demo_revenue|idr }} nominal simulasi yang sudah tercatat sukses.</small>
-                </article>
-            </div>
-            <div class="backoffice-note-box">
-                <strong>Fokus owner</strong>
-                <p>Kalau antrean verifikasi pembayaran tinggi, prioritaskan halaman keuangan dan workspace pesanan sebelum membuka maintenance katalog. Saat presentasi guru, transaksi demo QRIS juga bisa dijelaskan dari area ini sebagai simulasi yang tetap tercatat di operasional.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="backoffice-panel">
-    <div class="backoffice-panel-head">
+<!-- Section Antrean Prioritas (Full Width) -->
+<div class="bo-panel backoffice-panel" style="margin-bottom: 24px;">
+    <div class="bo-panel-head backoffice-panel-head">
         <div>
-            <span class="section-tag">Management Hub</span>
-            <h2>Shortcut Pengelolaan Inti</h2>
+            <span class="section-tag">Antrean Prioritas</span>
+            <h2>Pesanan Perlu Ditangani</h2>
+        </div>
+        <a href="{{ url_for('backoffice_orders') }}" class="bo-btn bo-btn--outline bo-btn--sm">Lihat Semua</a>
+    </div>
+    <div class="bo-table-wrap backoffice-table-wrap">
+        <table class="bo-table backoffice-table">
+            <thead>
+                <tr>
+                    <th>Kode</th>
+                    <th>Customer</th>
+                    <th>Destinasi</th>
+                    <th>Operasional</th>
+                    <th>Pembayaran</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in recent_orders %}
+                <tr>
+                    <td>
+                        <strong>{{ item.booking_code_display }}</strong>
+                        <small>{{ item.tanggal_pesan.strftime('%d %b %Y %H:%M') if item.tanggal_pesan else '-' }}</small>
+                    </td>
+                    <td>
+                        <strong>{{ item.nama_pemesan }}</strong>
+                        <small>{{ item.email }}</small>
+                    </td>
+                    <td>
+                        <strong>{{ item.wisata_nama }}</strong>
+                        <small>{{ item.nama_paket }}</small>
+                    </td>
+                    <td><span class="bo-badge {{ item.operational_meta.tone }}">{{ item.operational_meta.label }}</span></td>
+                    <td><span class="bo-badge {{ item.payment_meta.tone }}">{{ item.payment_meta.label }}</span></td>
+                    <td><a href="{{ url_for('backoffice_order_detail', pemesanan_id=item.id) }}" class="bo-link backoffice-link-inline">Detail</a></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="backoffice-empty-inline">Belum ada pesanan di antrean.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<section class="bo-panel backoffice-panel" style="margin-bottom: 24px;">
+    <div class="bo-panel-head backoffice-panel-head">
+        <div>
+            <span class="section-tag">Shortcut</span>
+            <h2>Akses Cepat Modul</h2>
         </div>
     </div>
-    <div class="backoffice-order-grid compact">
-        <article class="backoffice-order-card">
-            <div class="backoffice-order-card-body">
-                <div class="backoffice-card-topline">
+    <div class="bo-panel-body">
+        <div class="bo-shortcut-grid backoffice-order-grid compact">
+            <article class="backoffice-order-card">
+                <div class="backoffice-order-card-body">
                     <span class="bo-badge primary">Operasional</span>
+                    <h3>Kelola Pesanan</h3>
+                    <p>Antrean, verifikasi bayar, tiket & voucher.</p>
                 </div>
-                <h3>Kelola Pesanan</h3>
-                <p>Lihat antrean pesanan, verifikasi pembayaran, dan siapkan tiket serta voucher customer.</p>
-            </div>
-            <div class="backoffice-order-card-actions">
-                <a href="{{ url_for('backoffice_orders') }}" class="btn-primary">Buka Antrean</a>
-            </div>
-        </article>
-        <article class="backoffice-order-card">
-            <div class="backoffice-order-card-body">
-                <div class="backoffice-card-topline">
+                <div class="backoffice-order-card-actions">
+                    <a href="{{ url_for('backoffice_orders') }}" class="bo-btn bo-btn--sm">Buka</a>
+                </div>
+            </article>
+            <article class="backoffice-order-card">
+                <div class="backoffice-order-card-body">
                     <span class="bo-badge success">Produk</span>
+                    <h3>Destinasi & Paket</h3>
+                    <p>Katalog wisata dan paket keberangkatan.</p>
                 </div>
-                <h3>Destinasi &amp; Paket</h3>
-                <p>Tambah destinasi baru, edit data foto dan deskripsi, lalu atur paket keberangkatan yang tampil ke user.</p>
-            </div>
-            <div class="backoffice-order-card-actions">
-                <a href="{{ url_for('backoffice_destinations') }}" class="btn-primary">Kelola Destinasi</a>
-            </div>
-        </article>
-        <article class="backoffice-order-card">
-            <div class="backoffice-order-card-body">
-                <div class="backoffice-card-topline">
+                <div class="backoffice-order-card-actions">
+                    <a href="{{ url_for('backoffice_destinations') }}" class="bo-btn bo-btn--sm">Buka</a>
+                </div>
+            </article>
+            <article class="backoffice-order-card">
+                <div class="backoffice-order-card-body">
                     <span class="bo-badge warning">Promo</span>
+                    <h3>Promo & Diskon</h3>
+                    <p>Tampil otomatis di halaman promo publik.</p>
                 </div>
-                <h3>Promo &amp; Diskon</h3>
-                <p>Atur diskon destinasi, masa berlaku promo, dan penawaran yang akan muncul otomatis di halaman promo publik.</p>
-            </div>
-            <div class="backoffice-order-card-actions">
-                <a href="{{ url_for('backoffice_promotions') }}" class="btn-primary">Kelola Promo</a>
-            </div>
-        </article>
-        <article class="backoffice-order-card">
-            <div class="backoffice-order-card-body">
-                <div class="backoffice-card-topline">
+                <div class="backoffice-order-card-actions">
+                    <a href="{{ url_for('backoffice_promotions') }}" class="bo-btn bo-btn--sm">Buka</a>
+                </div>
+            </article>
+            <article class="backoffice-order-card">
+                <div class="backoffice-order-card-body">
                     <span class="bo-badge info">Finance</span>
+                    <h3>Keuangan</h3>
+                    <p>Riwayat pembayaran & export CSV.</p>
                 </div>
-                <h3>Riwayat Pembayaran</h3>
-                <p>Pantau nominal terkonfirmasi, transaksi manual, dan referensi transfer untuk kebutuhan laporan keuangan.</p>
-            </div>
-            <div class="backoffice-order-card-actions">
-                <a href="{{ url_for('backoffice_finance') }}" class="btn-primary">Buka Keuangan</a>
-            </div>
-        </article>
-        {% if current_staff.role == 'owner' %}
-        <article class="backoffice-order-card">
-            <div class="backoffice-order-card-body">
-                <div class="backoffice-card-topline">
+                <div class="backoffice-order-card-actions">
+                    <a href="{{ url_for('backoffice_finance') }}" class="bo-btn bo-btn--sm">Buka</a>
+                </div>
+            </article>
+            {% if current_staff.role == 'owner' %}
+            <article class="backoffice-order-card">
+                <div class="backoffice-order-card-body">
                     <span class="bo-badge dark">Akses</span>
+                    <h3>Tim & Akses</h3>
+                    <p>Kelola akun staff dan role.</p>
                 </div>
-                <h3>Tim &amp; Hak Akses</h3>
-                <p>Buat akun pegawai baru, atur role owner/finance/operasional, dan nonaktifkan akses yang sudah tidak dipakai.</p>
-            </div>
-            <div class="backoffice-order-card-actions">
-                <a href="{{ url_for('backoffice_staff') }}" class="btn-primary">Kelola Staff</a>
-            </div>
-        </article>
-        {% endif %}
+                <div class="backoffice-order-card-actions">
+                    <a href="{{ url_for('backoffice_staff') }}" class="bo-btn bo-btn--sm">Buka</a>
+                </div>
+            </article>
+            {% endif %}
+        </div>
     </div>
 </section>
+
+<!-- Section Aktivitas / Log Terbaru (Full Width at the very bottom) -->
+<div class="bo-panel backoffice-panel" style="margin-bottom: 24px;">
+    <div class="bo-panel-head backoffice-panel-head">
+        <div>
+            <span class="section-tag">Aktivitas</span>
+            <h2>Log Terbaru</h2>
+        </div>
+    </div>
+    <div class="backoffice-log-list" style="max-height: 380px;">
+        {% for log in recent_logs %}
+        <article class="backoffice-log-item">
+            <div class="backoffice-log-dot"></div>
+            <div>
+                <strong>{{ log.status_label }}</strong>
+                <p>{{ log.message }}</p>
+                <small>{{ log.kode_pemesanan or ('ELT-' ~ '%06d'|format(log.pemesanan_id)) }} · {{ log.created_at.strftime('%d %b %H:%M') if log.created_at else '-' }}</small>
+            </div>
+        </article>
+        {% else %}
+        <div class="backoffice-empty-inline">Belum ada log aktivitas.</div>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const ctx = document.getElementById('revenueChart');
-    if (ctx) {
+    if (ctx && typeof Chart !== 'undefined') {
         new Chart(ctx, {
             type: 'line',
             data: {
                 labels: {{ chart_labels|tojson }},
                 datasets: [{
-                    label: 'Pendapatan Terkonfirmasi (Rp)',
+                    label: 'Pendapatan Terkonfirmasi',
                     data: {{ chart_data|tojson }},
-                    borderColor: '#c8a84b',
-                    backgroundColor: 'rgba(200, 168, 75, 0.15)',
-                    borderWidth: 3,
-                    tension: 0.3,
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.12)',
+                    borderWidth: 2.5,
+                    tension: 0.35,
                     fill: true,
                     pointBackgroundColor: '#1a2744',
-                    pointBorderColor: '#c8a84b',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
+                    pointBorderColor: '#22c55e',
+                    pointRadius: 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
                     y: {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                if (value >= 1000000) {
-                                    return 'Rp ' + (value / 1000000) + ' Jt';
-                                }
+                                if (value >= 1000000) return 'Rp ' + (value / 1000000) + ' Jt';
                                 return 'Rp ' + value;
                             }
                         }

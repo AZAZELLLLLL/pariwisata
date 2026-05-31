@@ -1,12 +1,12 @@
 {% extends 'backoffice/auth_base.html' %}
 {% block title %}Setup Owner - Backoffice EL Travel{% endblock %}
 {% block auth_heading %}Buat akun owner pertama untuk mengaktifkan dashboard operasional.{% endblock %}
-{% block auth_copy %}Langkah ini hanya dilakukan sekali. Setelah akun owner dibuat, login staff berikutnya akan lewat halaman backoffice biasa.{% endblock %}
+{% block auth_copy %}Langkah ini hanya dilakukan sekali. Setelah akun owner dibuat, login staff berikutnya lewat halaman login biasa.{% endblock %}
 {% block auth_card %}
-<div class="backoffice-auth-card">
+<div class="bo-auth-card backoffice-auth-card">
     <div class="backoffice-auth-card-header">
         <h2>Setup Owner</h2>
-        <p>Gunakan email yang akan dipakai untuk memproses pesanan, verifikasi pembayaran, dan memantau semua aktivitas tim.</p>
+        <p>Email ini dipakai untuk login dan mengelola seluruh operasional tim.</p>
     </div>
 
     <form method="POST" class="backoffice-auth-form">
@@ -29,14 +29,14 @@
             </div>
         </div>
         <div class="form-group">
-            <label>Verifikasi Manusia: {{ setup_captcha_question }} = ?</label>
-            <input type="text" name="setup_captcha_answer" inputmode="numeric" placeholder="Isi hasil penjumlahan" required>
+            <label>Verifikasi: {{ setup_captcha_question }} = ?</label>
+            <input type="text" name="setup_captcha_answer" inputmode="numeric" placeholder="Hasil penjumlahan" required>
         </div>
         <input type="text" name="office_website" class="hidden-field" tabindex="-1" autocomplete="off">
-        <button type="submit" class="btn-primary backoffice-submit-btn">
+        <button type="submit" class="bo-btn backoffice-submit-btn">
             <i class="fas fa-user-shield"></i> Aktifkan Owner Pertama
         </button>
     </form>
-    <p class="backoffice-auth-footnote">Setelah akun owner aktif, semua booking dari website utama bisa langsung diproses dari dashboard ini.</p>
+    <p class="backoffice-auth-footnote">Setelah aktif, booking dari website utama langsung masuk ke antrean pesanan.</p>
 </div>
 {% endblock %}
